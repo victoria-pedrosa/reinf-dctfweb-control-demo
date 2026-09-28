@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exemplo · REINF · MIT · DCTFWeb</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Exemplo palette */
+  --green:      #1BAE72;
+  --green-dark: #159a63;
+  --green-deep: #0f7a4e;
+  --green-light:#e8f9f2;
+  --green-mid:  #d0f3e5;
+  --green-glow: rgba(27,174,114,.15);
+  --green-faint:rgba(27,174,114,.08);
+
+  /* Backgrounds */
+  --bg:         #f4f8f6;
+  --bg2:        #ffffff;
+  --bg3:        #f0f7f4;
+  --bg4:        #e6f4ee;
+  --sidebar-bg: #0f2a1e;
+  --sidebar2:   #142d22;
+  --sidebar3:   #1a3829;
+
+  /* Text */
+  --text:       #0f2a1e;
+  --text2:      #3d6652;
+  --text3:      #7aaa92;
+  --text-inv:   #e8f9f2;
+  --text-inv2:  #a8d4be;
+  --text-inv3:  #5a9c7a;
+
+  /* Border */
+  --border:     #c8e8d8;
+  --border2:    #ddf0e8;
+
+  /* Status */
+  --s-green:    #1BAE72;
+  --s-green2:   rgba(27,174,114,.12);
+  --s-red:      #e05252;
+  --s-red2:     rgba(224,82,82,.10);
+  --s-yellow:   #d97706;
+  --s-yellow2:  rgba(217,119,6,.10);
+  --s-blue:     #2563eb;
+  --s-blue2:    rgba(37,99,235,.10);
+  --s-gray:     #6b7280;
+  --s-gray2:    rgba(107,114,128,.10);
+  --s-orange:   #ea580c;
+  --s-orange2:  rgba(234,88,12,.10);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--green-mid);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--green)}
+
+/* ── HEADER ── */
+.header{
+  background:var(--bg2);
+  border-bottom:2px solid var(--green);
+  height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;position:sticky;top:0;z-index:100;gap:12px;
+  box-shadow:0 2px 12px rgba(27,174,114,.1);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{
+  width:36px;height:36px;background:var(--green);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(27,174,114,.3);
+}
+.brand-logo svg{width:22px;height:22px;fill:#fff}
+.brand-name{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.brand-sub{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.header-center{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;flex-wrap:wrap}
+.hbadge{
+  display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;
+  font-size:10px;font-weight:600;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);
+}
+.hbadge-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.header-right{display:flex;align-items:center;gap:8px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 2px 6px rgba(27,174,114,.3)}.btn-primary:hover{background:var(--green-dark);box-shadow:0 3px 10px rgba(27,174,114,.4)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1.5px solid var(--border)}.btn-secondary:hover{border-color:var(--green);background:var(--green-faint)}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid transparent}.btn-ghost:hover{background:var(--green-faint);color:var(--green);border-color:var(--border)}
+.btn-danger{background:var(--s-red2);color:var(--s-red);border:1.5px solid rgba(224,82,82,.2)}.btn-danger:hover{background:rgba(224,82,82,.18)}
+.btn-sm{padding:5px 11px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:11px}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:258px 1fr;min-height:calc(100vh - 58px)}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--sidebar-bg);overflow-y:auto;display:flex;flex-direction:column}
+.sb-block{padding:14px 16px;border-bottom:1px solid var(--sidebar3)}
+.sb-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-inv3);margin-bottom:10px}
+
+/* UPLOAD */
+.upload-zone{
+  border:1.5px dashed var(--text-inv3);border-radius:8px;padding:16px 10px;
+  text-align:center;cursor:pointer;transition:all .2s;background:var(--sidebar3);
+}
+.upload-zone:hover,.upload-zone.over{border-color:var(--green);background:rgba(27,174,114,.12)}
+.up-icon{font-size:22px;margin-bottom:6px;display:block}
+.up-text{font-size:11px;color:var(--text-inv2);line-height:1.5}
+.up-text strong{color:var(--green)}
+input[type=file]{display:none}
+.pdf-list{font-size:10px;color:var(--text-inv3);line-height:1.9;margin-top:8px;max-height:100px;overflow-y:auto}
+
+/* STATS */
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.stat-box{background:var(--sidebar2);border:1px solid var(--sidebar3);border-radius:7px;padding:8px 10px}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;line-height:1;color:var(--text-inv)}
+.stat-lbl{font-size:9px;color:var(--text-inv3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.c-green{color:var(--green)!important}.c-red{color:#f87171!important}.c-yellow{color:#fbbf24!important}
+
+/* PROG */
+.prog-wrap{margin-top:10px}
+.prog-head{display:flex;justify-content:space-between;font-size:10px;color:var(--text-inv3);margin-bottom:5px}
+.prog-bar{height:5px;background:var(--sidebar3);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green),#2dd4a0);border-radius:3px;transition:width .5s ease}
+
+/* OBR BARS */
+.obr-row{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.obr-item{display:flex;align-items:center;gap:7px}
+.obr-name{font-size:10px;color:var(--text-inv2);width:50px;flex-shrink:0}
+.obr-bw{flex:1;height:4px;background:var(--sidebar3);border-radius:2px;overflow:hidden}
+.obr-bf{height:100%;border-radius:2px;transition:width .4s}
+.obr-pct{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-inv3);width:26px;text-align:right}
+
+/* FILTERS */
+.fg{margin-bottom:9px}
+.fl{font-size:10px;color:var(--text-inv2);margin-bottom:4px;display:block}
+.fsel{width:100%;background:var(--sidebar2);border:1px solid var(--sidebar3);color:var(--text-inv);padding:6px 8px;border-radius:6px;font-size:11px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+.fsel:focus{border-color:var(--green)}
+.fi-sb{width:100%;background:var(--sidebar2);border:1px solid var(--sidebar3);color:var(--text-inv);padding:6px 8px;border-radius:6px;font-size:11px;font-family:'Inter',sans-serif;outline:none}
+.fi-sb:focus{border-color:var(--green)}
+.check-group{display:flex;flex-direction:column;gap:5px}
+.check-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-inv2);cursor:pointer;padding:3px 5px;border-radius:5px;transition:background .1s}
+.check-item:hover{background:var(--sidebar3)}
+.check-item input{accent-color:var(--green);cursor:pointer}
+
+/* SIDEBAR ACTIONS */
+.sb-action{
+  width:100%;justify-content:flex-start;background:var(--sidebar2);color:var(--text-inv2);
+  border:1px solid var(--sidebar3);font-size:11px;padding:7px 10px;border-radius:6px;
+  display:flex;align-items:center;gap:7px;cursor:pointer;transition:all .15s;
+  font-family:'Inter',sans-serif;font-weight:500;
+}
+.sb-action:hover{background:var(--sidebar3);border-color:var(--green);color:var(--text-inv)}
+.sb-action.danger:hover{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.3);color:#f87171}
+
+/* ── MAIN ── */
+.main{padding:18px;overflow:auto;background:var(--bg);display:flex;flex-direction:column;gap:13px}
+
+/* ALERT PANEL */
+.alert-panel{background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;display:none;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.alert-panel.has-alerts{display:block}
+.alert-header{padding:10px 15px;display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border-bottom:1px solid var(--border)}
+.alert-title{font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;color:var(--text)}
+.alert-list{padding:10px 15px;display:flex;flex-direction:column;gap:6px;max-height:130px;overflow-y:auto}
+.alert-item{display:flex;align-items:flex-start;gap:7px;padding:7px 11px;border-radius:6px;font-size:11px;border:1px solid;line-height:1.4}
+.alert-warn{background:var(--s-yellow2);border-color:rgba(217,119,6,.2);color:var(--s-yellow)}
+.alert-err{background:var(--s-red2);border-color:rgba(224,82,82,.2);color:var(--s-red)}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.toolbar-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.search-wrap{position:relative;max-width:250px;flex:1}
+.search-wrap input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:7px 8px 7px 29px;border-radius:7px;font-size:12px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow)}
+.search-ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none}
+.tabs{display:flex;gap:2px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:3px}
+.tab{padding:5px 11px;border-radius:5px;font-size:11px;cursor:pointer;color:var(--text3);transition:all .15s;border:none;background:transparent;font-family:'Inter',sans-serif;font-weight:500}
+.tab.active{background:var(--green);color:#fff;box-shadow:0 2px 6px rgba(27,174,114,.3)}
+
+/* TABLE */
+.table-wrap{background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.table-top{padding:12px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg3)}
+.ttl{font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.rec-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);background:var(--bg2);border:1.5px solid var(--border);padding:2px 9px;border-radius:20px;font-weight:600}
+.last-upd{font-size:10px;color:var(--text3)}
+
+table{width:100%;border-collapse:collapse}
+thead th{
+  background:var(--bg3);padding:9px 13px;text-align:left;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text3);border-bottom:1.5px solid var(--border);white-space:nowrap;
+  cursor:pointer;user-select:none;transition:color .15s;
+}
+thead th:hover{color:var(--green)}
+tbody tr{border-bottom:1px solid var(--border2);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--green-faint)}
+td{padding:10px 13px;font-size:12px;color:var(--text2);vertical-align:middle}
+td.td-empresa{color:var(--text);font-weight:600}
+td.td-cnpj{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+td.td-comp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);font-weight:600}
+td.td-upd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;white-space:nowrap;border:1px solid}
+.b-sent{background:var(--s-green2);color:var(--s-green);border-color:rgba(27,174,114,.3)}
+.b-miss{background:var(--s-red2);color:var(--s-red);border-color:rgba(224,82,82,.25)}
+.b-partial{background:var(--s-yellow2);color:var(--s-yellow);border-color:rgba(217,119,6,.25)}
+.b-na{background:var(--s-gray2);color:var(--s-gray);border-color:rgba(107,114,128,.2)}
+.b-sn{background:rgba(124,58,237,.1);color:#7c3aed;border-color:rgba(124,58,237,.2)}
+.b-lp{background:var(--s-orange2);color:var(--s-orange);border-color:rgba(234,88,12,.2)}
+.b-lr{background:var(--s-blue2);color:var(--s-blue);border-color:rgba(37,99,235,.2)}
+
+/* SCORE PILL */
+.score-pill{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:9px;border:1px solid;cursor:default;font-weight:600}
+.sc-ok{background:var(--s-green2);color:var(--s-green);border-color:rgba(27,174,114,.3)}
+.sc-warn{background:var(--s-yellow2);color:var(--s-yellow);border-color:rgba(217,119,6,.25)}
+.sc-err{background:var(--s-red2);color:var(--s-red);border-color:rgba(224,82,82,.25)}
+
+/* EMPTY */
+.empty{text-align:center;padding:52px 20px;color:var(--text3)}
+.empty-icon{font-size:42px;margin-bottom:12px}
+.empty-t{font-size:15px;color:var(--text2);margin-bottom:7px;font-weight:600}
+.empty-d{font-size:12px;line-height:1.7}
+
+/* PROC BAR */
+.proc-bar{height:3px;background:var(--green-mid);overflow:hidden;display:none}
+.proc-bar.on{display:block}
+.proc-fill{height:100%;background:linear-gradient(90deg,var(--green),#2dd4a0);animation:proc 1.2s ease-in-out infinite;width:35%}
+@keyframes proc{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+
+/* TOAST */
+.toast-ct{position:fixed;bottom:18px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.toast{
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;
+  padding:10px 14px;font-size:12px;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 8px 24px rgba(27,174,114,.12),0 2px 8px rgba(0,0,0,.08);
+  animation:tin .2s ease;max-width:290px;font-weight:500;
+}
+@keyframes tin{from{transform:translateX(14px);opacity:0}to{transform:none;opacity:1}}
+.toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--s-red)}.toast.inf{border-left:3px solid var(--s-blue)}.toast.wrn{border-left:3px solid var(--s-yellow)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,42,30,.55);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;width:620px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 50px rgba(15,42,30,.2)}
+.mh{padding:15px 20px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg3)}
+.mh-title{font-weight:700;font-size:14px;color:var(--text)}
+.mb{padding:18px 20px}
+.mf{padding:13px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg3)}
+
+/* FORM */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fgm{margin-bottom:10px}
+.flm{font-size:11px;color:var(--text2);margin-bottom:4px;display:block;font-weight:500}
+.fi,.fs{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:8px 10px;border-radius:7px;font-size:12px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+.fi:focus,.fs:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow)}
+.sec-div{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin:14px 0 9px;padding-bottom:6px;border-bottom:2px solid var(--green-mid)}
+
+/* OBR TOGGLES */
+.obr-tg{display:flex;gap:8px;flex-wrap:wrap}
+.obr-tog{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;font-size:11px;cursor:pointer;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .15s;user-select:none;font-weight:500}
+.obr-tog.checked{border-color:var(--green);background:var(--green-light);color:var(--green-deep);font-weight:700}
+
+/* DETAIL */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.dc{background:var(--bg3);border:1.5px solid var(--border2);border-radius:7px;padding:10px}
+.dc-label{font-size:10px;color:var(--text3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.dc-val{font-size:13px;color:var(--text);font-weight:500}
+.obr-dr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.obr-db{background:var(--bg3);border:1.5px solid var(--border2);border-radius:7px;padding:11px}
+.obr-dn{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:7px;font-weight:700;text-transform:uppercase}
+.consist-box{background:var(--green-light);border:1.5px solid var(--green-mid);border-radius:7px;padding:11px;margin-top:12px}
+.consist-title{font-size:10px;color:var(--green-deep);margin-bottom:7px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.consist-list{display:flex;flex-direction:column;gap:5px}
+.consist-li{font-size:11px;padding:5px 9px;border-radius:5px;display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+
+/* EXPORT DD */
+.dd-wrap{position:relative}
+.dd-menu{position:absolute;right:0;top:calc(100% + 5px);background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;min-width:175px;z-index:50;display:none;overflow:hidden;box-shadow:0 8px 24px rgba(15,42,30,.12)}
+.dd-menu.open{display:block}
+.dd-item{padding:9px 13px;font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s;font-weight:500}
+.dd-item:hover{background:var(--green-light);color:var(--green-deep)}
+
+/* ACT BTNS */
+.act-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 6px;border-radius:4px;font-size:12px;transition:all .15s}
+.act-btn:hover{background:var(--green-faint);color:var(--green)}
+.act-btn.del:hover{color:var(--s-red);background:var(--s-red2)}
+
+/* RESP */
+.rd{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.rd-fiscal{background:var(--green)}.rd-folha{background:#7c3aed}
+
+/* COMP PILLS */
+.comp-pill{
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);
+  transition:all .15s;white-space:nowrap;
+}
+.comp-pill:hover{border-color:var(--green);color:var(--green)}
+.comp-pill.active{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 2px 6px rgba(27,174,114,.3)}
+.comp-pill-ok{border-color:rgba(27,174,114,.3);color:var(--s-green)}
+.comp-pill-warn{border-color:rgba(217,119,6,.25);color:var(--s-yellow)}
+.comp-pill-err{border-color:rgba(224,82,82,.25);color:var(--s-red)}
+.comp-pill-ok.active,.comp-pill-warn.active,.comp-pill-err.active{background:var(--green);color:#fff;border-color:var(--green)}
+</style>
+</head>
+<body>
+
+<div class="proc-bar" id="procBar"><div class="proc-fill"></div></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-logo">
+      <!-- F icon approximating Exemplo logo -->
+      <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 C4 2 18 1 18 6 C18 9 11 9 11 9 C11 9 18 10 16 15 C14 19 4 20 4 20 L4 2 Z" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 11 L13 11" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">Escritório Contábil Exemplo</div>
+      <div class="brand-sub">REINF · MIT · DCTFWeb — Painel de Obrigações</div>
+    </div>
+  </div>
+  <div class="header-center" id="headerBadges"></div>
+  <div class="header-right">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);background:var(--bg3);border:1.5px solid var(--border);padding:3px 10px;border-radius:5px;font-weight:600" id="hdate"></span>
+    <button class="btn btn-secondary btn-sm" onclick="openModal('modalEmpresa')">＋ Empresa</button>
+    <button class="btn btn-secondary btn-sm" onclick="openModal('modalImportPlan')">📊 Planilha</button>
+    <button class="btn btn-secondary btn-sm" onclick="openModal('modalManual')">✏️ Manual</button>
+    <button class="btn btn-primary btn-sm" onclick="triggerUpload()">📂 Importar PDFs</button>
+    <input type="file" id="fInput" multiple accept=".pdf" onchange="handleFiles(event)">
+    <input type="file" id="planInput" accept=".csv,.xlsx,.xls" onchange="handlePlanilha(event)" style="display:none">
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <div class="sb-block">
+    <div class="sb-label">Importar PDFs</div>
+    <div class="upload-zone" id="dropZone" onclick="triggerUpload()"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFiles(event)">
+      <span class="up-icon">📄</span>
+      <div class="up-text"><strong>Clique</strong> ou arraste PDFs<br>REINF · MIT · DCTFWeb</div>
+    </div>
+
+    <!-- PROGRESS PANEL (shown during processing) -->
+    <div id="uploadProgressPanel" style="display:none;margin-top:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="font-size:10px;font-weight:700;color:var(--green)">⏳ Processando PDFs…</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-inv2)" id="upCounter">0 / 0</span>
+      </div>
+      <div style="height:8px;background:var(--sidebar3);border-radius:4px;overflow:hidden;margin-bottom:5px">
+        <div id="upBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--green),#2dd4a0);border-radius:4px;transition:width .3s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+        <span style="font-size:10px;color:var(--text-inv3)" id="upFileName">—</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--green)" id="upPercent">0%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+        <div style="background:var(--sidebar2);border:1px solid var(--sidebar3);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--green)" id="upOk">0</div>
+          <div style="font-size:9px;color:var(--text-inv3);text-transform:uppercase;letter-spacing:.05em">Lidos</div>
+        </div>
+        <div style="background:var(--sidebar2);border:1px solid var(--sidebar3);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#fbbf24" id="upNew">0</div>
+          <div style="font-size:9px;color:var(--text-inv3);text-transform:uppercase;letter-spacing:.05em">Novos</div>
+        </div>
+        <div style="background:var(--sidebar2);border:1px solid var(--sidebar3);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#f87171" id="upErr">0</div>
+          <div style="font-size:9px;color:var(--text-inv3);text-transform:uppercase;letter-spacing:.05em">Erros</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT PANEL (shown after processing) -->
+    <div id="uploadResultPanel" style="display:none;margin-top:10px">
+      <div style="background:var(--sidebar2);border:1px solid var(--sidebar3);border-radius:6px;padding:9px 10px;margin-bottom:7px">
+        <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:5px">✅ Upload concluído</div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-inv3)">
+          <span>Total processado:</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-inv2)" id="resTotal">0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-inv3)">
+          <span>Novos registros:</span><span style="font-family:'JetBrains Mono',monospace;color:var(--green)" id="resNovos">0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-inv3)">
+          <span>Duplicados ignorados:</span><span style="font-family:'JetBrains Mono',monospace;color:var(--text-inv3)" id="resDups">0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-inv3)">
+          <span>Não identificados:</span><span style="font-family:'JetBrains Mono',monospace;color:#f87171" id="resErr">0</span>
+        </div>
+        <div id="resNaoIdentWrap" style="display:none;border-top:1px solid var(--sidebar3);margin-top:6px;padding-top:6px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--s-yellow)">
+            <span>⚠️ Sem empresa cadastrada:</span><span style="font-family:'JetBrains Mono',monospace;font-weight:700" id="resNaoIdent">0</span>
+          </div>
+          <div style="font-size:10px;color:var(--text-inv3);margin-top:3px;line-height:1.5">Cadastre as empresas com os códigos abaixo para vincular:</div>
+          <div id="naoIdentList" style="margin-top:6px;max-height:200px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-list" id="pdfList">Nenhum arquivo carregado</div>
+  </div>
+
+  <div class="sb-block">
+    <div class="sb-label">Visão Geral</div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-val" id="sTotal">0</div><div class="stat-lbl">Empresas</div></div>
+      <div class="stat-box"><div class="stat-val c-green" id="sEnv">0</div><div class="stat-lbl">Completos</div></div>
+      <div class="stat-box"><div class="stat-val c-red" id="sFalt">0</div><div class="stat-lbl">Pendentes</div></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-head"><span style="color:var(--text-inv2)">Conformidade geral</span><span id="pct" style="color:var(--green);font-weight:700">0%</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="pBar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="sb-block">
+    <div class="sb-label">Por Obrigação</div>
+    <div class="obr-row">
+      <div class="obr-item">
+        <span class="obr-name">REINF</span>
+        <div class="obr-bw"><div class="obr-bf" id="barREINF" style="width:0%;background:var(--green)"></div></div>
+        <span class="obr-pct" id="pctREINF">0%</span>
+      </div>
+      <div class="obr-item">
+        <span class="obr-name">MIT</span>
+        <div class="obr-bw"><div class="obr-bf" id="barMIT" style="width:0%;background:#7c3aed"></div></div>
+        <span class="obr-pct" id="pctMIT">0%</span>
+      </div>
+      <div class="obr-item">
+        <span class="obr-name">DCTFWeb</span>
+        <div class="obr-bw"><div class="obr-bf" id="barDCTF" style="width:0%;background:var(--s-blue)"></div></div>
+        <span class="obr-pct" id="pctDCTF">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-block">
+    <div class="sb-label">Filtros</div>
+    <div class="fg"><label class="fl">Competência</label>
+      <select class="fsel" id="fComp" onchange="renderFiltered()"><option value="">Todas</option></select>
+    </div>
+    <div class="fg"><label class="fl">Regime Tributário</label>
+      <select class="fsel" id="fRegime" onchange="renderFiltered()">
+        <option value="">Todos</option>
+        <option>Simples Nacional</option><option>Lucro Presumido</option><option>Lucro Real</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Responsável</label>
+      <select class="fsel" id="fResp" onchange="renderFiltered()">
+        <option value="">Todos</option><option>Fiscal</option><option>Folha</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Status consolidado</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="fSent" checked onchange="renderFiltered()"> ✅ Todos enviados</label>
+        <label class="check-item"><input type="checkbox" id="fPart" checked onchange="renderFiltered()"> ⚠️ Parcialmente enviado</label>
+        <label class="check-item"><input type="checkbox" id="fMiss" checked onchange="renderFiltered()"> ❌ Com pendências</label>
+        <label class="check-item"><input type="checkbox" id="fNA"   checked onchange="renderFiltered()"> — Sem dados</label>
+      </div>
+    </div>
+    <div class="fg" style="margin-top:4px"><label class="fl">Análise de consistência</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="fIncons" onchange="renderFiltered()"> ⚡ Apenas inconsistentes</label>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="clearFilters()" style="width:100%;justify-content:center;margin-top:4px;color:var(--text-inv2);border-color:var(--sidebar3)">↺ Limpar filtros</button>
+  </div>
+
+  <div class="sb-block">
+    <div class="sb-label">Ações</div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <button class="sb-action" onclick="openModal('modalImportPlan')">📊 Importar Empresas (Planilha)</button>
+      <button class="sb-action" onclick="processAllPDFs()">⚙️ Reprocessar PDFs</button>
+      <button class="sb-action" onclick="exportPendencias()">📋 Relatório de Pendências</button>
+      <button class="sb-action" onclick="downloadModelo()">⬇️ Baixar Modelo CSV</button>
+      <button class="sb-action danger" onclick="clearAll()">🗑 Limpar todos os dados</button>
+    </div>
+  </div>
+
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ALERT PANEL -->
+  <div class="alert-panel" id="alertPanel">
+    <div class="alert-header">
+      <div class="alert-title">⚡ Alertas de Consistência <span class="rec-count" id="alertCount">0</span></div>
+      <button class="btn btn-ghost btn-xs" onclick="toggleAlerts()" id="alertToggleBtn" style="color:var(--text2)">▲ Recolher</button>
+    </div>
+    <div class="alert-list" id="alertList"></div>
+  </div>
+
+  <!-- COMPETÊNCIA QUICK FILTER -->
+  <div id="compBar" style="display:flex;align-items:center;gap:8px;background:var(--bg2);border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;flex-wrap:wrap">
+    <span style="font-size:11px;font-weight:700;color:var(--text2);white-space:nowrap">📅 Competência:</span>
+    <div id="compBtns" style="display:flex;gap:5px;flex-wrap:wrap;flex:1"></div>
+    <select id="compBarSelect" class="fi" style="max-width:130px;padding:5px 8px;font-size:12px;border-radius:6px" onchange="setCompFromBar(this.value)">
+      <option value="">Todas</option>
+    </select>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-wrap">
+        <span class="search-ic">🔍</span>
+        <input type="text" id="searchIn" placeholder="Buscar empresa ou CNPJ…" oninput="onSearch()">
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="setTab('all',this)">Todas</button>
+        <button class="tab" onclick="setTab('reinf',this)">REINF</button>
+        <button class="tab" onclick="setTab('mit',this)">MIT</button>
+        <button class="tab" onclick="setTab('dctf',this)">DCTFWeb</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="dd-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="toggleDD()">⬇ Exportar ▾</button>
+        <div class="dd-menu" id="ddMenu">
+          <div class="dd-item" onclick="exportCSV()">📊 Exportar CSV completo</div>
+          <div class="dd-item" onclick="exportPendencias()">⚠️ Relatório de pendências</div>
+          <div class="dd-item" onclick="exportJSON()">📋 Backup JSON</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-top">
+      <div class="ttl">
+        <span style="color:var(--green)">●</span> Status Individual por Obrigação
+        <span class="rec-count" id="recCount">0</span>
+      </div>
+      <div class="last-upd" id="lastUpd">—</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="mainTable">
+        <thead>
+          <tr>
+            <th onclick="sort('empresa')">Empresa</th>
+            <th onclick="sort('cnpj')">CNPJ</th>
+            <th onclick="sort('codigo')">Cód.</th>
+            <th onclick="sort('competencia')">Competência</th>
+            <th onclick="sort('regime')">Regime</th>
+            <th>Responsável</th>
+            <th onclick="sort('reinfSt')" style="min-width:112px">REINF</th>
+            <th onclick="sort('mitSt')"   style="min-width:112px">MIT</th>
+            <th onclick="sort('dctfSt')"  style="min-width:112px">DCTFWeb</th>
+            <th>Consistência</th>
+            <th onclick="sort('ultimaVer')">Última Verif.</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tBody"></tbody>
+      </table>
+      <div class="empty" id="emptyState">
+        <div class="empty-icon">📋</div>
+        <div class="empty-t">Nenhum dado encontrado</div>
+        <div class="empty-d">Cadastre empresas e importe PDFs para visualizar<br>o status individual de cada obrigação.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<div class="toast-ct" id="toastCt"></div>
+
+<!-- MODAL EMPRESA -->
+<div class="overlay" id="modalEmpresa">
+  <div class="modal">
+    <div class="mh"><span class="mh-title" id="mEmpTitle">Cadastrar Empresa</span><button class="act-btn" onclick="closeModal('modalEmpresa')" style="font-size:16px;color:var(--text2)">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="fEditId">
+      <div class="frow">
+        <div class="fgm"><label class="flm">Razão Social *</label><input class="fi" id="fNome" placeholder="Nome da empresa"></div>
+        <div class="fgm"><label class="flm">CNPJ *</label><input class="fi" id="fCNPJ" placeholder="00.000.000/0000-00" oninput="maskCNPJ(this)" maxlength="18"></div>
+      </div>
+      <div class="frow">
+        <div class="fgm"><label class="flm">Código Domínio</label><input class="fi" id="fCodigo" placeholder="Ex: 1234"></div>
+        <div class="fgm"><label class="flm">Regime Tributário *</label>
+          <select class="fs" id="fRegimeCad"><option value="">Selecione</option><option>Simples Nacional</option><option>Lucro Presumido</option><option>Lucro Real</option></select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fgm"><label class="flm">Responsável</label>
+          <select class="fs" id="fRespCad"><option value="Fiscal">Fiscal</option><option value="Folha">Folha</option></select>
+        </div>
+        <div class="fgm"><label class="flm">Tipo de Retenção</label>
+          <select class="fs" id="fRetencao"><option>INSS</option><option>Federais</option><option>INSS e Federais</option><option>Nenhuma</option></select>
+        </div>
+      </div>
+      <div class="sec-div">Obrigações aplicáveis — parametrização individual</div>
+      <div class="obr-tg">
+        <label class="obr-tog checked" id="togREINF" onclick="toggleObr(this,'REINF')"><input type="checkbox" id="cbREINF" checked> 📋 REINF</label>
+        <label class="obr-tog checked" id="togMIT"   onclick="toggleObr(this,'MIT')">  <input type="checkbox" id="cbMIT"   checked> 📑 MIT</label>
+        <label class="obr-tog checked" id="togDCTF"  onclick="toggleObr(this,'DCTFWeb')"><input type="checkbox" id="cbDCTF" checked> 📊 DCTFWeb</label>
+      </div>
+      <div class="frow" style="margin-top:12px">
+        <div class="fgm"><label class="flm">Competência base (opcional)</label><input class="fi" id="fCompBase" placeholder="MM/AAAA"></div>
+        <div class="fgm"><label class="flm">Observações</label><input class="fi" id="fObs" placeholder="Notas internas…"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeModal('modalEmpresa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEmpresa()">Salvar Empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHE -->
+<div class="overlay" id="modalDetalhe">
+  <div class="modal">
+    <div class="mh"><span class="mh-title" id="mdTitle">Detalhes</span><button class="act-btn" onclick="closeModal('modalDetalhe')" style="font-size:16px;color:var(--text2)">✕</button></div>
+    <div class="mb" id="mdBody"></div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeModal('modalDetalhe')">Fechar</button>
+      <button class="btn btn-secondary btn-sm" id="mdEditBtn">✏️ Editar empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MANUAL -->
+<div class="overlay" id="modalManual">
+  <div class="modal" style="max-width:420px">
+    <div class="mh"><span class="mh-title">Lançamento Manual de Status</span><button class="act-btn" onclick="closeModal('modalManual')" style="font-size:16px;color:var(--text2)">✕</button></div>
+    <div class="mb">
+      <div class="fgm"><label class="flm">Empresa *</label><select class="fs" id="manEmpresa"></select></div>
+      <div class="frow">
+        <div class="fgm"><label class="flm">Competência *</label><input class="fi" id="manComp" placeholder="MM/AAAA"></div>
+        <div class="fgm"><label class="flm">Tipo de Obrigação *</label>
+          <select class="fs" id="manTipo"><option>REINF</option><option>MIT</option><option>DCTFWeb</option></select>
+        </div>
+      </div>
+      <div class="fgm"><label class="flm">Situação</label>
+        <select class="fs" id="manSit"><option>Transmitida</option><option>Retificada</option><option>Em processamento</option><option>Cancelada</option></select>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeModal('modalManual')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveManual()">Lançar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL IMPORTAR PLANILHA -->
+<div class="overlay" id="modalImportPlan">
+  <div class="modal" style="max-width:700px">
+    <div class="mh">
+      <span class="mh-title">📊 Importar Empresas em Lote — Planilha</span>
+      <button class="act-btn" onclick="closeModal('modalImportPlan')" style="font-size:16px;color:var(--text2)">✕</button>
+    </div>
+    <div class="mb">
+
+      <!-- STEP 1: Instructions -->
+      <div style="background:var(--green-light);border:1.5px solid var(--green-mid);border-radius:8px;padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--green-deep);margin-bottom:6px">📋 Como usar</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.7">
+          1. Baixe o modelo CSV clicando no botão abaixo<br>
+          2. Abra no Excel ou Google Planilhas e preencha com seus dados<br>
+          3. Salve como <strong>.CSV</strong> (separado por vírgula) ou mantenha como <strong>.XLSX</strong><br>
+          4. Arraste ou selecione o arquivo aqui
+        </div>
+      </div>
+
+      <!-- DOWNLOAD MODELO -->
+      <button class="btn btn-secondary" onclick="downloadModelo()" style="margin-bottom:14px;width:100%;justify-content:center">
+        ⬇️ Baixar Modelo CSV (preenchido com exemplos)
+      </button>
+
+      <!-- COLUNAS ESPERADAS -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:7px">Colunas esperadas na planilha:</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <thead>
+              <tr style="background:var(--bg3)">
+                <th style="padding:6px 10px;text-align:left;border:1px solid var(--border);color:var(--green-deep);font-weight:700">Coluna</th>
+                <th style="padding:6px 10px;text-align:left;border:1px solid var(--border);color:var(--green-deep);font-weight:700">Obrigatório</th>
+                <th style="padding:6px 10px;text-align:left;border:1px solid var(--border);color:var(--green-deep);font-weight:700">Valores aceitos / Exemplo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">nome</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--s-red)">✔ Sim</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Razão Social Ltda</td></tr>
+              <tr style="background:var(--bg3)"><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">cnpj</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--s-red)">✔ Sim</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">00.000.008/0001-00 ou 00000008000100</td></tr>
+              <tr><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">codigo</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Não</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">1234 (Código Domínio)</td></tr>
+              <tr style="background:var(--bg3)"><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">regime</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--s-red)">✔ Sim</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Simples Nacional / Lucro Presumido / Lucro Real</td></tr>
+              <tr><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">responsavel</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Não</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Fiscal ou Folha</td></tr>
+              <tr style="background:var(--bg3)"><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">retencao</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Não</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">INSS / Federais / INSS e Federais / Nenhuma</td></tr>
+              <tr><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">reinf</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Não</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">SIM ou NAO (padrão: SIM)</td></tr>
+              <tr style="background:var(--bg3)"><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">mit</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Não</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">SIM ou NAO (padrão: SIM)</td></tr>
+              <tr><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">dctfweb</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Não</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">SIM ou NAO (padrão: SIM)</td></tr>
+              <tr style="background:var(--bg3)"><td style="padding:5px 10px;border:1px solid var(--border2);font-weight:600">obs</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Não</td><td style="padding:5px 10px;border:1px solid var(--border2);color:var(--text3)">Observações livres</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- UPLOAD ZONE PLANILHA -->
+      <div id="planDropZone"
+           style="border:1.5px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--bg3);transition:all .2s"
+           onclick="document.getElementById('planInput').click()"
+           ondragover="planDragOver(event)" ondragleave="planDragLeave(event)" ondrop="planDrop(event)">
+        <div style="font-size:28px;margin-bottom:8px">📊</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2)"><strong style="color:var(--green)">Clique</strong> ou arraste sua planilha aqui</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">Aceita .CSV · .XLSX · .XLS</div>
+      </div>
+
+      <!-- PROGRESS DE IMPORTAÇÃO -->
+      <div id="planProgress" style="display:none;margin-top:12px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:5px">
+          <span id="planProgressMsg">Lendo arquivo…</span>
+          <span id="planProgressPct" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green)">0%</span>
+        </div>
+        <div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border)">
+          <div id="planProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--green),#2dd4a0);border-radius:4px;transition:width .3s ease"></div>
+        </div>
+      </div>
+
+      <!-- PREVIEW TABLE -->
+      <div id="planPreviewWrap" style="display:none;margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">Pré-visualização — <span id="planPreviewCount">0</span> empresa(s) encontradas</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="planErrCount" style="font-size:11px;color:var(--s-red);display:none"></span>
+            <span id="planDupCount" style="font-size:11px;color:var(--s-yellow);display:none"></span>
+          </div>
+        </div>
+        <!-- LEGEND -->
+        <div style="display:flex;gap:10px;margin-bottom:8px;font-size:10px;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;background:var(--s-green2);border:1px solid var(--green);border-radius:2px"></span>Nova empresa</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;background:var(--s-yellow2);border:1px solid var(--s-yellow);border-radius:2px"></span>Já cadastrada (será atualizada)</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;background:var(--s-red2);border:1px solid var(--s-red);border-radius:2px"></span>Erro / dado inválido</span>
+        </div>
+        <div style="overflow-x:auto;max-height:240px;overflow-y:auto;border:1.5px solid var(--border);border-radius:7px">
+          <table style="width:100%;border-collapse:collapse;font-size:11px" id="planPreviewTable">
+            <thead style="position:sticky;top:0;z-index:1">
+              <tr style="background:var(--bg3)">
+                <th style="padding:7px 10px;text-align:left;border-bottom:1.5px solid var(--border);color:var(--text3);font-weight:700;white-space:nowrap">#</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1.5px solid var(--border);color:var(--text3);font-weight:700;white-space:nowrap">Nome</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1.5px solid var(--border);color:var(--text3);font-weight:700;white-space:nowrap">CNPJ</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1.5px solid var(--border);color:var(--text3);font-weight:700;white-space:nowrap">Regime</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1.5px solid var(--border);color:var(--text3);font-weight:700;white-space:nowrap">Resp.</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1.5px solid var(--border);color:var(--text3);font-weight:700;white-space:nowrap">Obrig.</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1.5px solid var(--border);color:var(--text3);font-weight:700;white-space:nowrap">Status</th>
+              </tr>
+            </thead>
+            <tbody id="planPreviewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeModal('modalImportPlan');planReset()">Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmImport" style="display:none" onclick="confirmImportPlan()">✅ Confirmar Importação</button>
+    </div>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let empresas  = JSON.parse(localStorage.getItem('fm_empresas')  || '[]');
+let registros = JSON.parse(localStorage.getItem('fm_registros') || '[]');
+let pdfFiles  = [];
+let currentTab= 'all';
+let sortCol   = null;
+let sortAsc   = true;
+let filteredRows = [];
+let alertsOpen   = true;
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock(); setInterval(updateClock, 60000);
+  if (!empresas.length) loadDemo(); else renderAll();
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.dd-wrap')) document.getElementById('ddMenu').classList.remove('open');
+    document.querySelectorAll('.overlay').forEach(o => { if(e.target===o) o.classList.remove('open'); });
+  });
+});
+
+function updateClock(){
+  document.getElementById('hdate').textContent =
+    new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})+' '+
+    new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function loadDemo(){
+  empresas = [
+    {id:1,nome:'Comercial Silva Ltda',cnpj:'00.000.008/0001-00',codigo:'1001',regime:'Simples Nacional',responsavel:'Fiscal',retencao:'INSS',obrigacoes:['REINF','MIT','DCTFWeb'],obs:''},
+    {id:2,nome:'Indústria Verde S.A.',cnpj:'00.000.009/0001-00',codigo:'1002',regime:'Lucro Real',responsavel:'Folha',retencao:'INSS e Federais',obrigacoes:['REINF','MIT','DCTFWeb'],obs:''},
+    {id:3,nome:'Tech Solutions Ltda', cnpj:'00.000.010/0001-00',codigo:'1003',regime:'Lucro Presumido',responsavel:'Fiscal',retencao:'Federais',obrigacoes:['REINF','DCTFWeb'],obs:'MIT não aplicável'},
+    {id:4,nome:'Construtora Norte',   cnpj:'00.000.011/0001-00',codigo:'1004',regime:'Lucro Real',responsavel:'Folha',retencao:'INSS e Federais',obrigacoes:['REINF','MIT','DCTFWeb'],obs:''},
+    {id:5,nome:'Farmácia Popular ME', cnpj:'00.000.012/0001-00',codigo:'1005',regime:'Simples Nacional',responsavel:'Fiscal',retencao:'INSS',obrigacoes:['REINF','DCTFWeb'],obs:''},
+  ];
+  registros = [
+    {cnpj:'00.000.008/0001-00',competencia:'04/2025',tipo:'REINF',  situacao:'Transmitida',arquivo:'reinf_silva_04_2025.pdf',dataVerif:today()},
+    {cnpj:'00.000.008/0001-00',competencia:'04/2025',tipo:'MIT',    situacao:'Transmitida',arquivo:'mit_silva_04_2025.pdf',  dataVerif:today()},
+    {cnpj:'00.000.008/0001-00',competencia:'04/2025',tipo:'DCTFWeb',situacao:'Transmitida',arquivo:'dctf_silva_04_2025.pdf', dataVerif:today()},
+    {cnpj:'00.000.009/0001-00',competencia:'04/2025',tipo:'REINF',  situacao:'Transmitida',arquivo:'reinf_verde_04_2025.pdf',dataVerif:today()},
+    {cnpj:'00.000.009/0001-00',competencia:'04/2025',tipo:'MIT',    situacao:'Transmitida',arquivo:'mit_verde_04_2025.pdf',  dataVerif:today()},
+    {cnpj:'00.000.010/0001-00',competencia:'04/2025',tipo:'REINF',  situacao:'Transmitida',arquivo:'reinf_tech_04_2025.pdf', dataVerif:today()},
+    {cnpj:'00.000.012/0001-00',competencia:'04/2025',tipo:'REINF',  situacao:'Transmitida',arquivo:'reinf_farm_04_2025.pdf', dataVerif:today()},
+    {cnpj:'00.000.012/0001-00',competencia:'04/2025',tipo:'DCTFWeb',situacao:'Transmitida',arquivo:'dctf_farm_04_2025.pdf',  dataVerif:today()},
+  ];
+  saveData(); renderAll();
+  toast('Dados de exemplo carregados — Exemplo','inf');
+}
+
+function saveData(){
+  invalidateCache();
+  localStorage.setItem('fm_empresas',  JSON.stringify(empresas));
+  localStorage.setItem('fm_registros', JSON.stringify(registros));
+}
+
+function triggerUpload(){ document.getElementById('fInput').click() }
+function handleFiles(e){ processPDFs(Array.from(e.target.files)) }
+function dragOver(e){ e.preventDefault(); document.getElementById('dropZone').classList.add('over') }
+function dragLeave(){ document.getElementById('dropZone').classList.remove('over') }
+function dropFiles(e){
+  e.preventDefault(); dragLeave();
+  const fs=Array.from(e.dataTransfer.files).filter(f=>f.name.toLowerCase().endsWith('.pdf'));
+  if(fs.length) processPDFs(fs); else toast('Apenas arquivos PDF aceitos','err');
+}
+
+async function processPDFs(files){
+  const total = files.length;
+  pdfFiles = [...pdfFiles, ...files];
+
+  document.getElementById('uploadProgressPanel').style.display = 'block';
+  document.getElementById('uploadResultPanel').style.display = 'none';
+  document.getElementById('procBar').classList.add('on');
+
+  let done=0, novo=0, erros=0, dups=0, naoIdent=0;
+  const naoIdentList = []; // PDFs sem empresa correspondente
+  const names = [];
+
+  const setProgress = (idx, fname, status='') => {
+    const pct = Math.round((idx / total) * 100);
+    document.getElementById('upBarFill').style.width = pct + '%';
+    document.getElementById('upCounter').textContent = `${idx} / ${total}`;
+    document.getElementById('upPercent').textContent = pct + '%';
+    const label = (status ? `[${status}] ` : '') + (fname.length > 20 ? fname.slice(0,18)+'…' : fname);
+    document.getElementById('upFileName').textContent = label;
+    document.getElementById('upOk').textContent = done;
+    document.getElementById('upNew').textContent = novo;
+    document.getElementById('upErr').textContent = erros + naoIdent;
+  };
+
+  for(let i=0; i<files.length; i++){
+    const f = files[i];
+    names.push(f.name);
+    setProgress(i, f.name, '⏳');
+    await new Promise(r => setTimeout(r, 0));
+    try{
+      const txt  = await extractPDF(f);
+      const ex   = parsePDF(txt, f.name);
+      done++;
+
+      if (!ex) {
+        erros++; setProgress(i+1, f.name, '❌');
+      // ── MULTI-REGISTRO: Recibo DCTFWeb confirma até 3 obrigações de uma vez ──
+      } else if (ex._multiRegistro) {
+        let thisNovo = 0, thisDup = 0;
+        for (const reg of ex.registros) {
+          if (!reg.cnpj) { naoIdent++; continue; }
+          const dup = registros.find(r => norm(r.cnpj)===norm(reg.cnpj) && r.competencia===reg.competencia && r.tipo===reg.tipo);
+          if (!dup) { registros.push({...reg, arquivo: f.name}); thisNovo++; novo++; }
+          else { thisDup++; dups++; }
+        }
+        if (ex.naoIdentificado) {
+          naoIdent++;
+          naoIdentList.push({arquivo: f.name, codigo: ex.codigoArquivo, nome: ex.nomeArquivo, competencia: ex.competencia, tipo: 'DCTFWeb+REINF+MIT'});
+          setProgress(i+1, f.name, '⚠️');
+        } else {
+          const tipos = ex.registros.map(r=>r.tipo).join('+');
+          setProgress(i+1, f.name, thisNovo > 0 ? `✅ ${tipos}` : `🔄 ${tipos}`);
+        }
+
+      // ── REGISTRO SIMPLES (REINF, MIT, DCTFWeb avulso) ──
+      } else if (ex.naoIdentificado) {
+        naoIdent++;
+        naoIdentList.push({arquivo: f.name, codigo: ex.codigoArquivo, nome: ex.nomeArquivo, competencia: ex.competencia, tipo: ex.tipo});
+        setProgress(i+1, f.name, '⚠️');
+      } else if (ex.cnpj) {
+        const dup = registros.find(r => norm(r.cnpj)===norm(ex.cnpj) && r.competencia===ex.competencia && r.tipo===ex.tipo);
+        if (!dup) { registros.push({...ex, arquivo: f.name, dataVerif: today()}); novo++; setProgress(i+1, f.name, '✅'); }
+        else { dups++; setProgress(i+1, f.name, '🔄'); }
+      } else {
+        erros++; setProgress(i+1, f.name, '❌');
+      }
+    }catch(e){
+      console.warn(f.name, e);
+      erros++;
+      setProgress(i+1, f.name, '❌');
+    }
+  }
+
+  document.getElementById('procBar').classList.remove('on');
+  document.getElementById('upBarFill').style.width = '100%';
+  document.getElementById('upCounter').textContent = `${total} / ${total}`;
+  document.getElementById('upPercent').textContent = '100%';
+
+  setTimeout(()=>{
+    document.getElementById('uploadProgressPanel').style.display = 'none';
+    document.getElementById('uploadResultPanel').style.display = 'block';
+    document.getElementById('resTotal').textContent = total;
+    document.getElementById('resNovos').textContent = novo;
+    document.getElementById('resDups').textContent  = dups;
+    document.getElementById('resErr').textContent   = erros;
+    // Show não identificados
+    const niEl = document.getElementById('resNaoIdent');
+    const niWrap = document.getElementById('resNaoIdentWrap');
+    if(niEl) niEl.textContent = naoIdent;
+    if(niWrap) niWrap.style.display = naoIdent > 0 ? '' : 'none';
+    if(naoIdent > 0) renderNaoIdentList(naoIdentList);
+  }, 500);
+
+  // PDF list with color-coded status
+  document.getElementById('pdfList').innerHTML = names.map(n => {
+    const rec = registros.find(r=>r.arquivo===n);
+    const ni  = naoIdentList.find(x=>x.arquivo===n);
+    const icon = rec ? '✅' : ni ? '⚠️' : '❌';
+    const col  = rec ? 'var(--green)' : ni ? 'var(--s-yellow)' : 'var(--s-red)';
+    return `<div style="display:flex;align-items:center;gap:5px;padding:2px 0">
+      <span style="font-size:11px">${icon}</span>
+      <span style="color:${col};font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${n}">${n.length>28?n.slice(0,26)+'…':n}</span>
+    </div>`;
+  }).join('');
+
+  saveData(); renderAll();
+  const msgs = [`✅ ${novo} novos`];
+  if(dups>0) msgs.push(`🔄 ${dups} duplicados`);
+  if(naoIdent>0) msgs.push(`⚠️ ${naoIdent} sem empresa`);
+  if(erros>0) msgs.push(`❌ ${erros} erros`);
+  toast(`${total} PDFs: ${msgs.join(' · ')}`, naoIdent>0||erros>0 ? 'wrn' : 'ok');
+}
+
+function renderNaoIdentList(list){
+  const el = document.getElementById('naoIdentList');
+  if(!el) return;
+  el.innerHTML = list.map(x=>`
+    <div style="display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--border2);font-size:10px">
+      <span style="color:var(--s-yellow);flex-shrink:0">⚠️</span>
+      <div>
+        <div style="color:var(--text2);font-weight:600">${x.arquivo}</div>
+        <div style="color:var(--text3)">Cód: <strong style="color:var(--s-yellow)">${x.codigo||'?'}</strong> · ${x.nome||'—'} · ${x.competencia} · ${x.tipo}</div>
+        <div style="color:var(--text3);margin-top:2px">Cadastre esta empresa com código <strong>${x.codigo}</strong> para vincular automaticamente</div>
+      </div>
+    </div>`).join('');
+}
+
+async function extractPDF(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=async e=>{
+      try{
+        const arr=new Uint8Array(e.target.result);
+        const pdf=await pdfjsLib.getDocument({data:arr}).promise;
+        let txt='';
+        for(let i=1;i<=pdf.numPages;i++){
+          const pg=await pdf.getPage(i);
+          const ct=await pg.getTextContent();
+          txt+=ct.items.map(x=>x.str).join(' ')+'\n';
+        }
+        res(txt);
+      }catch(err){rej(err)}
+    };
+    r.onerror=rej; r.readAsArrayBuffer(file);
+  });
+}
+
+function parsePDF(txt, fname) {
+  // ═══════════════════════════════════════════════════════════════════════
+  //  MODELO A — Recibo DCTFWeb (Receita Federal)
+  //  "Recibo de Entrega da Declaração de Débitos e Créditos... DCTFWeb"
+  //  → Contém CNPJ, Nome, Período, Identificação da apuração (Reinf CP / MIT)
+  //  → Uma única leitura confirma DCTFWeb + REINF + MIT de uma só vez
+  // ═══════════════════════════════════════════════════════════════════════
+  const isDCTFWebRecibo = /Recibo de Entrega da.*?DCTFWeb/i.test(txt) ||
+                          /DCTFWeb recebida via Internet/i.test(txt) ||
+                          /Recibo_DCTFWeb/i.test(fname) ||
+                          /DCTF.*recibo/i.test(fname);
+
+  if (isDCTFWebRecibo) {
+    return parseDCTFWebRecibo(txt, fname);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  MODELO B — EFD-REINF (e-CAC)
+  //  "EFD-REINF > R-2099 > Totalizadores"
+  //  Nome do arquivo: R2000_-_EMPRESA_-_CODIGO.pdf
+  // ═══════════════════════════════════════════════════════════════════════
+  const isREINF = /EFD-REINF|EFD_REINF|R-2099|R2099/i.test(txt) ||
+                  /^R[2-4]\d{3}[_\-\s]/i.test(fname) ||
+                  /\bREINF\b/i.test(fname);
+
+  if (isREINF) {
+    return parseREINFFile(txt, fname);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  MODELO C — MIT (outros padrões futuros)
+  // ═══════════════════════════════════════════════════════════════════════
+  if (/\bMIT\b/.test(fname.toUpperCase()) || /malha\s*de\s*imposto/i.test(txt)) {
+    return parseSingleObrigation(txt, fname, 'MIT');
+  }
+
+  // Fallback genérico
+  return parseSingleObrigation(txt, fname, 'DCTFWeb');
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+//  PARSER A: Recibo DCTFWeb — identifica DCTFWeb + REINF + MIT de uma vez
+// ─────────────────────────────────────────────────────────────────────────
+function parseDCTFWebRecibo(txt, fname) {
+  // 1. CNPJ — linha "CNPJ/CPF 00.000.004/0001-00"
+  let cnpj = null;
+  const cnpjLine = txt.match(/CNPJ\/CPF\s+([\d]{2}\.[\d]{3}\.[\d]{3}\/[\d]{4}-[\d]{2})/);
+  if (cnpjLine) {
+    cnpj = cnpjLine[1];
+  } else {
+    // fallback: qualquer CNPJ no texto
+    const cm = txt.match(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/);
+    if (cm) cnpj = cm[0];
+    else {
+      const r14 = txt.match(/\b\d{14}\b/);
+      if (r14) cnpj = fmtCNPJ(r14[0]);
+    }
+  }
+
+  // 2. Período de apuração — linha "Período de apuração 02/2026"
+  let competencia = null;
+  const periodoM = txt.match(/Per[íi]odo\s+de\s+apura[çc][ãa]o\s+([01]?\d)\/(\d{4})/i);
+  if (periodoM) competencia = `${periodoM[1].padStart(2,'0')}/${periodoM[2]}`;
+
+  // 3. Número do recibo — "Nº do recibo de entrega 0000050000458205490"
+  const reciboM = txt.match(/N[ºo°]\s+do\s+recibo\s+de\s+entrega\s+([\d]+)/i);
+  const recibo  = reciboM ? reciboM[1] : null;
+
+  // 4. Data/hora transmissão
+  const dataM = txt.match(/recebida\s+via\s+Internet.*?(\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2})/i);
+  const dataTransmissao = dataM ? dataM[1] : null;
+
+  // 5. Retificadora?
+  const retificadora = /Declara[çc][ãa]o\s+Retificadora\s+Sim/i.test(txt);
+  const situacao = recibo ? (retificadora ? 'Retificada' : 'Transmitida') : 'Não transmitida';
+
+  // 6. Detectar REINF e MIT no campo "Identificação da apuração de débitos"
+  //    Linha: "141554494 / Reinf CP" e "21906224 / MIT"
+  const apuracaoBlock = txt.match(/Identifica[çc][ãa]o\s+da\s+apura[çc][ãa]o\s+de\s+d[eé]bitos([\s\S]{0,400}?)Totaliza[çc][ãa]o/i);
+  const apuracaoTxt   = apuracaoBlock ? apuracaoBlock[1] : txt;
+
+  const temREINF = /Reinf\s*CP|Reinf\s*RP|EFD[_\-]?Reinf/i.test(apuracaoTxt);
+  const temMIT   = /\bMIT\b/i.test(apuracaoTxt);
+
+  // 7. Buscar empresa pelo CNPJ ou pelo nome no PDF
+  let empresa = cnpj ? empresas.find(e => norm(e.cnpj) === norm(cnpj)) : null;
+  if (!empresa) {
+    // Tenta pelo nome: linha "Nome EMPRESA EXEMPLO 103, PRODUCAO..."
+    const nomeM = txt.match(/^Nome\s+(.+)$/im);
+    if (nomeM) {
+      const nomePDF = nomeM[1].trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+      empresa = empresas.find(e => {
+        const eNorm = e.nome.toUpperCase().replace(/[^A-Z0-9]/g,'');
+        return eNorm.slice(0,12) === nomePDF.slice(0,12);
+      });
+      if (empresa && !cnpj) cnpj = empresa.cnpj;
+    }
+  }
+
+  if (!competencia) return null;
+
+  // 8. Retorna um array de registros (pode ser até 3 de uma vez)
+  const registrosGerados = [];
+  const base = { cnpj, competencia, situacao, recibo, dataTransmissao, arquivo: null, dataVerif: today() };
+
+  // DCTFWeb — sempre (é o próprio arquivo)
+  registrosGerados.push({ ...base, tipo: 'DCTFWeb' });
+
+  // REINF — se identificado na apuração de débitos
+  if (temREINF) registrosGerados.push({ ...base, tipo: 'REINF' });
+
+  // MIT — se identificado
+  if (temMIT) registrosGerados.push({ ...base, tipo: 'MIT' });
+
+  // Marca como multi-registro para o chamador tratar
+  return {
+    _multiRegistro: true,
+    registros: registrosGerados,
+    cnpj,
+    competencia,
+    naoIdentificado: !empresa && !cnpj,
+    nomeArquivo: null,
+    codigoArquivo: null,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+//  PARSER B: EFD-REINF (e-CAC) — arquivo R2000_-_EMPRESA_-_28.pdf
+// ─────────────────────────────────────────────────────────────────────────
+function parseREINFFile(txt, fname) {
+  // 1. Código e nome do arquivo
+  //    Padrão: R2000_-_EMPRESA_EXEMPLO_-_28.pdf
+  const fnStem   = fname.replace(/\.pdf$/i, '');
+  const parts    = fnStem.split(/\s*_-_\s*|\s*\s-\s*\s*/);
+  let codigoFromFile = null, nomeFromFile = null;
+
+  if (parts.length >= 3) {
+    const last = parts[parts.length - 1].trim();
+    if (/^\d{1,8}$/.test(last) || /^[A-Z0-9]{1,10}$/.test(last)) {
+      codigoFromFile = last;
+      nomeFromFile   = parts.slice(1, -1).join(' ').replace(/_/g,' ').trim();
+    }
+  }
+  if (!codigoFromFile) {
+    const cm2 = fnStem.match(/[_\-\s](\d{1,8})$/);
+    if (cm2) codigoFromFile = cm2[1];
+  }
+
+  // 2. Busca empresa pelo código Domínio (mais confiável)
+  let cnpj = null;
+  if (codigoFromFile) {
+    const emp = empresas.find(e => String(e.codigo).trim() === String(codigoFromFile).trim());
+    if (emp) cnpj = emp.cnpj;
+  }
+  // Fallback: nome parcial no filename
+  if (!cnpj && nomeFromFile) {
+    const fnNorm = nomeFromFile.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);
+    const emp2 = empresas.find(e => {
+      const eNorm = e.nome.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);
+      return eNorm === fnNorm;
+    });
+    if (emp2) cnpj = emp2.cnpj;
+  }
+  // Último recurso: CNPJ no conteúdo
+  if (!cnpj) {
+    const cm = txt.match(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/);
+    if (cm) cnpj = cm[0];
+  }
+
+  // 3. Período de apuração do conteúdo do PDF
+  let competencia = null;
+  const periodoM = txt.match(/Per[íi]odo\s+de\s+apura[çc][ãa]o[:\s\n]+([01]?\d)\/(\d{4})/i);
+  if (periodoM) competencia = `${periodoM[1].padStart(2,'0')}/${periodoM[2]}`;
+  if (!competencia) {
+    const cp = txt.match(/\b(0?[1-9]|1[0-2])[\/](20\d{2})\b/);
+    if (cp) competencia = `${cp[1].padStart(2,'0')}/${cp[2]}`;
+  }
+
+  // 4. Situação: presença de "Número do recibo" + número = transmitido
+  let situacao = 'Não transmitida';
+  const reciboM = txt.match(/N[úu]mero\s+do\s+recibo[:\s\n]*([\d\-]+)/i);
+  const recibo  = reciboM ? reciboM[1].trim() : null;
+  if (recibo && recibo.length > 5) situacao = 'Transmitida';
+  else if (/retificad/i.test(txt)) situacao = 'Retificada';
+  else if (/cancelad/i.test(txt))  situacao = 'Cancelada';
+
+  if (!competencia) return null;
+
+  if (!cnpj) {
+    return { cnpj: null, codigoArquivo: codigoFromFile, nomeArquivo: nomeFromFile,
+             competencia, tipo: 'REINF', situacao, recibo, naoIdentificado: true };
+  }
+  return { cnpj, competencia, tipo: 'REINF', situacao, recibo, codigoArquivo: codigoFromFile };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+//  PARSER C: Genérico (MIT avulso, outros)
+// ─────────────────────────────────────────────────────────────────────────
+function parseSingleObrigation(txt, fname, tipo) {
+  const cm   = txt.match(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/);
+  let cnpj   = cm ? cm[0] : null;
+  if (!cnpj) { const r14=txt.match(/\b\d{14}\b/); if(r14) cnpj=fmtCNPJ(r14[0]); }
+
+  const periodoM = txt.match(/Per[íi]odo\s+de\s+apura[çc][ãa]o[:\s\n]*([01]?\d)\/(\d{4})/i);
+  let competencia = periodoM ? `${periodoM[1].padStart(2,'0')}/${periodoM[2]}` : null;
+  if (!competencia) {
+    const cp=txt.match(/\b(0?[1-9]|1[0-2])[\/](20\d{2})\b/);
+    if(cp) competencia=`${cp[1].padStart(2,'0')}/${cp[2]}`;
+  }
+
+  let situacao = 'Não transmitida';
+  if (/transmitida|enviada|processada|recebida/i.test(txt)) situacao = 'Transmitida';
+  else if (/retificada/i.test(txt)) situacao = 'Retificada';
+  else if (/cancelada/i.test(txt))  situacao = 'Cancelada';
+
+  const reciboM = txt.match(/recibo[\s\S]{0,30}?([\d]{10,})/i);
+  const recibo  = reciboM ? reciboM[1] : null;
+
+  if (!competencia) return null;
+  if (!cnpj) return null;
+  return { cnpj, competencia, tipo, situacao, recibo };
+}
+
+async function processAllPDFs(){
+  if(!pdfFiles.length){toast('Nenhum PDF carregado para reprocessar','inf');return;}
+  registros=[];
+  document.getElementById('uploadResultPanel').style.display='none';
+  await processPDFs(pdfFiles);
+}
+
+function fmtCNPJ(d){ return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5') }
+function getComps(){ return [...new Set(registros.map(r=>r.competencia).filter(Boolean))].sort() }
+
+// ── CACHE: rebuilt only when data changes ──────────────────────────────────
+let _rowCache     = null;  // full row list, all competências
+let _indexByComp  = null;  // Map<competencia, rows[]>
+let _normEmpCache = null;  // Map<empresaId, normCNPJ>
+
+function invalidateCache(){
+  _rowCache = null; _indexByComp = null; _normEmpCache = null;
+}
+
+function getNormEmp(){
+  if (!_normEmpCache){
+    _normEmpCache = new Map();
+    for (const e of empresas) _normEmpCache.set(e.id, e.cnpj.replace(/\D/g,''));
+  }
+  return _normEmpCache;
+}
+
+// Pre-index registros by "normCNPJ|competencia|tipo" for O(1) lookup
+function buildRegIndex(){
+  const idx = new Map();
+  for (const r of registros){
+    if (!r.cnpj) continue;
+    const key = r.cnpj.replace(/\D/g,'') + '|' + r.competencia + '|' + r.tipo;
+    if (!idx.has(key)) idx.set(key, r);
+  }
+  return idx;
+}
+
+function buildRows(){
+  if (_rowCache) return _rowCache;
+
+  const comps   = getComps();
+  const regIdx  = buildRegIndex();
+  const normEmp = getNormEmp();
+  const rows    = [];
+
+  const getStatus = (normCnpj, comp, tipo, obrigacoes) => {
+    if (!obrigacoes.includes(tipo)) return 'na';
+    if (comp === '—') return 'unknown';
+    const rec = regIdx.get(normCnpj + '|' + comp + '|' + tipo);
+    if (!rec) return 'missing';
+    if (rec.situacao === 'Transmitida' || rec.situacao === 'Retificada') return 'sent';
+    return 'partial';
+  };
+
+  // Pre-build date index: normCNPJ|comp → latest date
+  const dateIdx = new Map();
+  for (const r of registros){
+    if (!r.cnpj || !r.dataVerif) continue;
+    const key = r.cnpj.replace(/\D/g,'') + '|' + (r.competencia||'');
+    const cur = dateIdx.get(key);
+    if (!cur || r.dataVerif > cur) dateIdx.set(key, r.dataVerif);
+  }
+
+  const compList = comps.length ? comps : ['—'];
+
+  for (const e of empresas){
+    const nc = normEmp.get(e.id) || e.cnpj.replace(/\D/g,'');
+    for (const comp of compList){
+      const reinfSt = getStatus(nc, comp, 'REINF',   e.obrigacoes);
+      const mitSt   = getStatus(nc, comp, 'MIT',     e.obrigacoes);
+      const dctfSt  = getStatus(nc, comp, 'DCTFWeb', e.obrigacoes);
+      const ultimaVer = dateIdx.get(nc + '|' + comp) || '—';
+      rows.push({
+        id:e.id, empresa:e.nome, cnpj:e.cnpj, codigo:e.codigo||'—',
+        regime:e.regime, responsavel:e.responsavel, retencao:e.retencao,
+        obrigacoes:e.obrigacoes, competencia:comp,
+        reinfSt, mitSt, dctfSt, ultimaVer, obs:e.obs
+      });
+    }
+  }
+  _rowCache = rows;
+  return rows;
+}
+
+function consistScore(r){
+  const issues=[]; const {reinfSt,mitSt,dctfSt,obrigacoes}=r;
+  const has=o=>obrigacoes.includes(o);
+  if(has('REINF')&&has('DCTFWeb')){
+    if(reinfSt==='sent'&&dctfSt==='missing') issues.push({t:'warn',msg:'REINF enviada, mas DCTFWeb pendente'});
+    if(dctfSt==='sent'&&reinfSt==='missing') issues.push({t:'warn',msg:'DCTFWeb enviada, mas REINF pendente'});
+    if(reinfSt==='missing'&&dctfSt==='missing') issues.push({t:'err',msg:'REINF e DCTFWeb ambas pendentes'});
+  }
+  if(has('MIT')&&has('DCTFWeb')){
+    if(mitSt==='sent'&&dctfSt==='missing') issues.push({t:'warn',msg:'MIT enviado, mas DCTFWeb pendente'});
+    if(dctfSt==='sent'&&mitSt==='missing') issues.push({t:'warn',msg:'DCTFWeb enviada, mas MIT pendente'});
+  }
+  if(has('REINF')&&has('MIT')&&has('DCTFWeb')){
+    if(reinfSt==='sent'&&mitSt==='sent'&&dctfSt==='missing')
+      issues.push({t:'err',msg:'REINF+MIT enviados, DCTFWeb ausente'});
+    if(dctfSt==='sent'&&reinfSt==='missing'&&mitSt==='missing')
+      issues.push({t:'err',msg:'Apenas DCTFWeb enviada — inconsistência grave'});
+  }
+  return issues;
+}
+
+function rowCategory(r){
+  const sts=[r.reinfSt,r.mitSt,r.dctfSt].filter(s=>s!=='na'&&s!=='unknown');
+  if(!sts.length) return 'na';
+  if(sts.every(s=>s==='sent')) return 'sent';
+  if(sts.some(s=>s==='missing')) return 'miss';
+  if(sts.some(s=>s==='partial')) return 'part';
+  return 'na';
+}
+
+// ── RENDER ALL: build once, pass to everyone ────────────────────────────────
+function renderAll(){
+  invalidateCache();
+  const allRows = buildRows();  // built once here
+  populateCompFilter(allRows);
+  renderCompBar(allRows);
+  renderFiltered(allRows);      // passes pre-built rows
+  buildAlerts(allRows);
+  buildHeaderBadges(allRows);
+}
+
+function populateCompFilter(allRows){
+  const comps = getComps();
+  const sel   = document.getElementById('fComp');
+  const cur   = sel.value;
+  sel.innerHTML = '<option value="">Todas</option>' +
+    comps.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');
+}
+
+// ── COMPETÊNCIA BAR (quick pill buttons) ───────────────────────────────────
+function renderCompBar(allRows){
+  const comps = getComps();
+  const sel   = document.getElementById('compBarSelect');
+  const btns  = document.getElementById('compBtns');
+  const curComp = document.getElementById('fComp').value;
+
+  // Update the select
+  sel.innerHTML = '<option value="">Todas</option>' +
+    comps.map(c=>`<option value="${c}"${c===curComp?' selected':''}>${c}</option>`).join('');
+
+  // Pill buttons (show up to 12 competências; above that use only select)
+  if (comps.length > 12) { btns.innerHTML=''; return; }
+
+  // Count per competência
+  const sentMap = {};
+  const totMap  = {};
+  for (const r of allRows){
+    const c = r.competencia;
+    if (!totMap[c]) { totMap[c]=0; sentMap[c]=0; }
+    totMap[c]++;
+    if(rowCategory(r)==='sent') sentMap[c]++;
+  }
+
+  btns.innerHTML = [
+    `<button onclick="setCompFromBar('')" class="comp-pill${!curComp?' active':''}" title="Todas as competências">Todas</button>`,
+    ...comps.map(c=>{
+      const pct = totMap[c] ? Math.round(sentMap[c]/totMap[c]*100) : 0;
+      const col = pct===100?'ok':pct>0?'warn':'err';
+      return `<button onclick="setCompFromBar('${c}')" class="comp-pill comp-pill-${col}${curComp===c?' active':''}" title="${sentMap[c]}/${totMap[c]} enviados">${c} <span style="opacity:.7;font-size:9px">${pct}%</span></button>`;
+    })
+  ].join('');
+}
+
+function setCompFromBar(comp){
+  document.getElementById('fComp').value = comp;
+  document.getElementById('compBarSelect').value = comp;
+  renderFiltered();
+  // Sync pill active state
+  document.querySelectorAll('.comp-pill').forEach(b=>{
+    b.classList.toggle('active', b.textContent.startsWith(comp||'Todas'));
+  });
+}
+
+// ── RENDER FILTERED (accepts pre-built rows optionally) ─────────────────────
+let _searchTimer = null;
+function renderFiltered(preRows){
+  const rows0 = preRows || buildRows();  // use cache if available
+
+  const search = document.getElementById('searchIn').value.toLowerCase().trim();
+  const fComp  = document.getElementById('fComp').value;
+  const fReg   = document.getElementById('fRegime').value;
+  const fRes   = document.getElementById('fResp').value;
+  const fSent  = document.getElementById('fSent').checked;
+  const fPart  = document.getElementById('fPart').checked;
+  const fMiss  = document.getElementById('fMiss').checked;
+  const fNA    = document.getElementById('fNA').checked;
+  const fInc   = document.getElementById('fIncons').checked;
+
+  // Filter competência first (biggest reduction)
+  let rows = fComp ? rows0.filter(r=>r.competencia===fComp) : rows0;
+
+  if(currentTab==='reinf') rows=rows.filter(r=>r.obrigacoes.includes('REINF'));
+  else if(currentTab==='mit')  rows=rows.filter(r=>r.obrigacoes.includes('MIT'));
+  else if(currentTab==='dctf') rows=rows.filter(r=>r.obrigacoes.includes('DCTFWeb'));
+
+  if(search) rows=rows.filter(r=>r.empresa.toLowerCase().includes(search)||r.cnpj.includes(search));
+  if(fReg)   rows=rows.filter(r=>r.regime===fReg);
+  if(fRes)   rows=rows.filter(r=>r.responsavel===fRes);
+
+  rows=rows.filter(r=>{
+    const cat=rowCategory(r);
+    if(cat==='sent'&&!fSent) return false;
+    if(cat==='part'&&!fPart) return false;
+    if(cat==='miss'&&!fMiss) return false;
+    if(cat==='na'&&!fNA)     return false;
+    return true;
+  });
+  if(fInc) rows=rows.filter(r=>consistScore(r).length>0);
+  if(sortCol) rows.sort((a,b)=>{ const av=a[sortCol]||'',bv=b[sortCol]||''; return sortAsc?av.localeCompare(bv):bv.localeCompare(av); });
+
+  filteredRows=rows;
+  renderTable(rows);
+  updateStats(rows);
+  // Refresh comp bar active states without rebuilding
+  document.querySelectorAll('.comp-pill').forEach(b=>{
+    const fComp2=document.getElementById('fComp').value;
+    b.classList.toggle('active', fComp2 ? b.textContent.startsWith(fComp2) : b.textContent.startsWith('Todas'));
+  });
+}
+
+// Debounce search to avoid lag while typing
+function onSearch(){
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(renderFiltered, 180);
+}
+
+function renderTable(rows){
+  const tbody=document.getElementById('tBody');
+  const empty=document.getElementById('emptyState');
+  document.getElementById('recCount').textContent=`${rows.length} registro${rows.length!==1?'s':''}`;
+  document.getElementById('lastUpd').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(!rows.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+
+  // Render in chunks to avoid blocking UI for large datasets
+  const CHUNK = 80;
+  if (rows.length > CHUNK){
+    tbody.innerHTML = '';
+    empty.style.display = 'none';
+    let i = 0;
+    const renderChunk = () => {
+      const frag = document.createDocumentFragment();
+      const slice = rows.slice(i, i+CHUNK);
+      slice.forEach((r,j)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = rowHTML(r, i+j);
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+      i += CHUNK;
+      if (i < rows.length) requestAnimationFrame(renderChunk);
+    };
+    requestAnimationFrame(renderChunk);
+  } else {
+    tbody.innerHTML = rows.map((r,i)=>`<tr>${rowHTML(r,i)}</tr>`).join('');
+  }
+}
+
+function rowHTML(r,i){
+  const iss=consistScore(r);
+  const sp=iss.length===0
+    ?`<span class="score-pill sc-ok">✓ OK</span>`
+    :iss.some(x=>x.t==='err')
+      ?`<span class="score-pill sc-err" title="${iss.map(x=>x.msg).join('\n')}">⚡ ${iss.length}</span>`
+      :`<span class="score-pill sc-warn" title="${iss.map(x=>x.msg).join('\n')}">⚠ ${iss.length}</span>`;
+  return `
+    <td class="td-empresa" title="${r.empresa}">${trunc(r.empresa,25)}</td>
+    <td class="td-cnpj">${r.cnpj}</td>
+    <td style="font-size:11px;color:var(--text3)">${r.codigo}</td>
+    <td class="td-comp">${r.competencia}</td>
+    <td>${regimeBadge(r.regime)}</td>
+    <td><span class="rd rd-${r.responsavel.toLowerCase()}"></span>${r.responsavel}</td>
+    <td>${obBadge(r.reinfSt,'REINF',r.obrigacoes)}</td>
+    <td>${obBadge(r.mitSt,'MIT',r.obrigacoes)}</td>
+    <td>${obBadge(r.dctfSt,'DCTFWeb',r.obrigacoes)}</td>
+    <td>${sp}</td>
+    <td class="td-upd">${r.ultimaVer}</td>
+    <td style="white-space:nowrap">
+      <button class="act-btn" title="Detalhes" onclick="showDetail(${i})">🔍</button>
+      <button class="act-btn" title="Lançar manual" onclick="openManual(${r.id})">✏️</button>
+      <button class="act-btn del" title="Remover empresa" onclick="removeEmpresa(${r.id})">✕</button>
+    </td>`;
+}
+
+function obBadge(st,label,obrigacoes){
+  if(!obrigacoes.includes(label)) return `<span class="badge b-na" title="Não aplicável">N/A</span>`;
+  if(st==='sent')    return `<span class="badge b-sent">✅ Enviado</span>`;
+  if(st==='missing') return `<span class="badge b-miss">❌ Pendente</span>`;
+  if(st==='partial') return `<span class="badge b-partial">⚠️ Parcial</span>`;
+  if(st==='unknown') return `<span class="badge b-na">— Sem PDF</span>`;
+  return `<span class="badge b-na">—</span>`;
+}
+
+function regimeBadge(r){
+  const m={'Simples Nacional':['b-sn','SN'],'Lucro Presumido':['b-lp','LP'],'Lucro Real':['b-lr','LR']};
+  const[cls,abbr]=m[r]||['b-na',r];
+  return `<span class="badge ${cls}">${abbr}</span>`;
+}
+
+function updateStats(rows){
+  let sent=0,miss=0,rTot=0,rSent=0,mTot=0,mSent=0,dTot=0,dSent=0;
+  for(const r of rows){
+    const cat=rowCategory(r);
+    if(cat==='sent') sent++; if(cat==='miss') miss++;
+    if(r.obrigacoes.includes('REINF')){rTot++;if(r.reinfSt==='sent')rSent++;}
+    if(r.obrigacoes.includes('MIT'))  {mTot++;if(r.mitSt==='sent')mSent++;}
+    if(r.obrigacoes.includes('DCTFWeb')){dTot++;if(r.dctfSt==='sent')dSent++;}
+  }
+  const pct=rows.length?Math.round(sent/rows.length*100):0;
+  document.getElementById('sTotal').textContent=empresas.length;
+  document.getElementById('sEnv').textContent=sent;
+  document.getElementById('sFalt').textContent=miss;
+  document.getElementById('pct').textContent=pct+'%';
+  document.getElementById('pBar').style.width=pct+'%';
+  const sp=(id,bid,n,d)=>{const v=d?Math.round(n/d*100):0;document.getElementById(id).textContent=v+'%';document.getElementById(bid).style.width=v+'%';};
+  sp('pctREINF','barREINF',rSent,rTot);
+  sp('pctMIT','barMIT',mSent,mTot);
+  sp('pctDCTF','barDCTF',dSent,dTot);
+}
+
+function buildAlerts(allRows){
+  const rows = allRows || buildRows();
+  // Only check the currently selected competência to avoid thousands of alerts
+  const fComp = document.getElementById('fComp').value;
+  const toCheck = fComp ? rows.filter(r=>r.competencia===fComp) : rows.slice(0,200);
+  const alerts=[];
+  for(const r of toCheck){
+    const iss=consistScore(r);
+    for(const x of iss){
+      const comp=r.competencia==='—'?'':` [${r.competencia}]`;
+      alerts.push({t:x.t,msg:`${trunc(r.empresa,20)}${comp}: ${x.msg}`});
+    }
+    if(alerts.length>=50) break; // cap
+  }
+  const panel=document.getElementById('alertPanel');
+  document.getElementById('alertCount').textContent=alerts.length+(alerts.length>=50?'+':'');
+  if(!alerts.length){panel.classList.remove('has-alerts');return;}
+  panel.classList.add('has-alerts');
+  document.getElementById('alertList').innerHTML=alerts.map(a=>`
+    <div class="alert-item alert-${a.t==='err'?'err':'warn'}">${a.t==='err'?'⚡':'⚠️'} ${a.msg}</div>`).join('');
+}
+
+function toggleAlerts(){
+  alertsOpen=!alertsOpen;
+  document.getElementById('alertList').style.display=alertsOpen?'':'none';
+  document.getElementById('alertToggleBtn').textContent=alertsOpen?'▲ Recolher':'▼ Expandir';
+}
+
+function buildHeaderBadges(allRows){
+  const comps = getComps().slice(-3);
+  const c = document.getElementById('headerBadges');
+  if(!comps.length){c.innerHTML='';return;}
+  const rows = allRows || buildRows();
+  c.innerHTML=comps.map(comp=>{
+    const sub  = rows.filter(r=>r.competencia===comp);
+    const all  = sub.length;
+    const sent = sub.filter(r=>rowCategory(r)==='sent').length;
+    const col  = sent===all&&all>0?'var(--green)':sent>0?'var(--s-yellow)':'var(--s-red)';
+    return `<div class="hbadge"><span class="hbadge-dot" style="background:${col}"></span>${comp}: ${sent}/${all}</div>`;
+  }).join('');
+}
+
+
+function saveEmpresa(){
+  const eid=document.getElementById('fEditId').value;
+  const nome=document.getElementById('fNome').value.trim();
+  const cnpj=document.getElementById('fCNPJ').value.trim();
+  const codigo=document.getElementById('fCodigo').value.trim();
+  const regime=document.getElementById('fRegimeCad').value;
+  const resp=document.getElementById('fRespCad').value;
+  const ret=document.getElementById('fRetencao').value;
+  const obs=document.getElementById('fObs').value.trim();
+  const obr=['REINF','MIT','DCTFWeb'].filter(o=>document.getElementById(`cb${o}`).checked);
+  if(!nome||!cnpj||!regime){toast('Preencha os campos obrigatórios','err');return;}
+  if(eid){
+    const idx=empresas.findIndex(e=>e.id==eid);
+    if(idx>-1) empresas[idx]={...empresas[idx],nome,cnpj,codigo,regime,responsavel:resp,retencao:ret,obrigacoes:obr,obs};
+    toast(`"${nome}" atualizada`,'ok');
+  } else {
+    if(empresas.find(e=>norm(e.cnpj)===norm(cnpj))){toast('CNPJ já cadastrado','err');return;}
+    empresas.push({id:Date.now(),nome,cnpj,codigo,regime,responsavel:resp,retencao:ret,obrigacoes:obr,obs});
+    toast(`"${nome}" cadastrada`,'ok');
+  }
+  saveData(); renderAll(); closeModal('modalEmpresa'); resetForm();
+}
+
+function removeEmpresa(id){
+  if(!confirm('Remover esta empresa?')) return;
+  empresas=empresas.filter(e=>e.id!==id);
+  saveData(); renderAll(); toast('Empresa removida','inf');
+}
+
+function resetForm(){
+  ['fNome','fCNPJ','fCodigo','fObs','fCompBase','fEditId'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('fRegimeCad').value='';
+  ['REINF','MIT','DCTFWeb'].forEach(o=>{
+    document.getElementById(`cb${o}`).checked=true;
+    document.getElementById(`tog${o}`).classList.add('checked');
+  });
+  document.getElementById('mEmpTitle').textContent='Cadastrar Empresa';
+}
+
+function toggleObr(label,tipo){
+  const cb=document.getElementById(`cb${tipo}`);
+  cb.checked=!cb.checked;
+  label.classList.toggle('checked',cb.checked);
+}
+
+function editEmpresa(id){
+  const e=empresas.find(x=>x.id===id); if(!e) return;
+  document.getElementById('fEditId').value=id;
+  document.getElementById('fNome').value=e.nome;
+  document.getElementById('fCNPJ').value=e.cnpj;
+  document.getElementById('fCodigo').value=e.codigo||'';
+  document.getElementById('fRegimeCad').value=e.regime;
+  document.getElementById('fRespCad').value=e.responsavel;
+  document.getElementById('fRetencao').value=e.retencao;
+  document.getElementById('fObs').value=e.obs||'';
+  ['REINF','MIT','DCTFWeb'].forEach(o=>{
+    const v=e.obrigacoes.includes(o);
+    document.getElementById(`cb${o}`).checked=v;
+    document.getElementById(`tog${o}`).classList.toggle('checked',v);
+  });
+  document.getElementById('mEmpTitle').textContent='Editar Empresa';
+  openModal('modalEmpresa');
+}
+
+function openManual(empId){
+  const sel=document.getElementById('manEmpresa');
+  sel.innerHTML=empresas.map(e=>`<option value="${e.cnpj}"${e.id===empId?' selected':''}>${e.nome}</option>`).join('');
+  openModal('modalManual');
+}
+
+function saveManual(){
+  const cnpj=document.getElementById('manEmpresa').value;
+  const comp=document.getElementById('manComp').value.trim();
+  const tipo=document.getElementById('manTipo').value;
+  const sit =document.getElementById('manSit').value;
+  if(!comp){toast('Informe a competência','err');return;}
+  const dup=registros.find(r=>norm(r.cnpj)===norm(cnpj)&&r.competencia===comp&&r.tipo===tipo);
+  if(dup){dup.situacao=sit;dup.dataVerif=today();}
+  else registros.push({cnpj,competencia:comp,tipo,situacao:sit,arquivo:'Manual',dataVerif:today()});
+  saveData(); renderAll(); closeModal('modalManual');
+  toast(`Lançamento manual: ${tipo} ${comp}`,'ok');
+}
+
+function showDetail(idx){
+  const r=filteredRows[idx]; if(!r) return;
+  document.getElementById('mdTitle').textContent=r.empresa;
+  document.getElementById('mdEditBtn').onclick=()=>{closeModal('modalDetalhe');editEmpresa(r.id);};
+  const iss=consistScore(r);
+  const cHtml=iss.length
+    ?iss.map(x=>`<div class="consist-li ${x.t==='err'?'alert-err':'alert-warn'}">${x.t==='err'?'⚡':'⚠️'} ${x.msg}</div>`).join('')
+    :`<div class="consist-li" style="color:var(--green-deep);background:var(--green-mid);padding:6px 9px;border-radius:5px">✓ Nenhuma inconsistência detectada</div>`;
+  const obDetail=(tipo,st)=>{
+    const na=!r.obrigacoes.includes(tipo);
+    const rec=registros.find(x=>norm(x.cnpj)===norm(r.cnpj)&&x.competencia===r.competencia&&x.tipo===tipo);
+    return `<div class="obr-db">
+      <div class="obr-dn">${tipo}</div>
+      ${obBadge(st,tipo,r.obrigacoes)}
+      ${na?`<div style="font-size:10px;color:var(--text3);margin-top:6px">Não parametrizado</div>`:''}
+      ${!na&&rec?`<div style="font-size:10px;color:var(--text2);margin-top:6px">Situação: <strong>${rec.situacao}</strong></div>`:''}
+      ${!na&&rec?`<div style="font-size:10px;color:var(--text3)">📄 ${rec.arquivo}</div>`:''}
+      ${!na&&rec?.dataVerif?`<div style="font-size:10px;color:var(--text3)">Verif: ${rec.dataVerif}</div>`:''}
+      ${!na&&!rec?`<div style="font-size:10px;color:var(--s-red);margin-top:6px">Nenhum registro encontrado</div>`:''}
+    </div>`;
+  };
+  document.getElementById('mdBody').innerHTML=`
+    <div class="detail-grid">
+      <div class="dc"><div class="dc-label">CNPJ</div><div class="dc-val" style="font-family:'JetBrains Mono',monospace;font-size:12px">${r.cnpj}</div></div>
+      <div class="dc"><div class="dc-label">Código Domínio</div><div class="dc-val">${r.codigo}</div></div>
+      <div class="dc"><div class="dc-label">Regime</div><div class="dc-val">${regimeBadge(r.regime)} ${r.regime}</div></div>
+      <div class="dc"><div class="dc-label">Competência</div><div class="dc-val" style="font-family:'JetBrains Mono',monospace;color:var(--green);font-weight:700">${r.competencia}</div></div>
+      <div class="dc"><div class="dc-label">Responsável</div><div class="dc-val"><span class="rd rd-${r.responsavel.toLowerCase()}"></span>${r.responsavel}</div></div>
+      <div class="dc"><div class="dc-label">Retenção</div><div class="dc-val">${r.retencao}</div></div>
+      <div class="dc"><div class="dc-label">Última Verificação</div><div class="dc-val" style="font-family:'JetBrains Mono',monospace;font-size:11px">${r.ultimaVer}</div></div>
+      <div class="dc"><div class="dc-label">Observações</div><div class="dc-val" style="font-size:11px;color:var(--text2)">${r.obs||'—'}</div></div>
+    </div>
+    <div class="sec-div" style="margin-top:14px">Status Individual de Cada Obrigação</div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:8px">Status exibidos de forma independente. Uma obrigação não afeta o status das demais.</div>
+    <div class="obr-dr">
+      ${obDetail('REINF',r.reinfSt)}
+      ${obDetail('MIT',r.mitSt)}
+      ${obDetail('DCTFWeb',r.dctfSt)}
+    </div>
+    <div class="consist-box">
+      <div class="consist-title">Análise complementar de consistência</div>
+      <div style="font-size:10px;color:var(--green-deep);margin-bottom:7px;font-style:italic">Esta análise é adicional e não substitui o status individual acima.</div>
+      <div class="consist-list">${cHtml}</div>
+    </div>`;
+  openModal('modalDetalhe');
+}
+
+function sort(col){
+  if(sortCol===col) sortAsc=!sortAsc; else{sortCol=col;sortAsc=true;}
+  renderFiltered();
+}
+
+function setTab(t,el){
+  currentTab=t;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active'); renderFiltered();
+}
+
+function clearFilters(){
+  document.getElementById('fComp').value='';
+  document.getElementById('fRegime').value='';
+  document.getElementById('fResp').value='';
+  document.getElementById('searchIn').value='';
+  ['fSent','fPart','fMiss','fNA'].forEach(id=>document.getElementById(id).checked=true);
+  document.getElementById('fIncons').checked=false;
+  renderFiltered();
+}
+
+function toggleDD(){ document.getElementById('ddMenu').classList.toggle('open') }
+
+function exportCSV(){
+  const H=['Empresa','CNPJ','Código','Competência','Regime','Responsável','Retenção','REINF','MIT','DCTFWeb','Consistência','Última Verif.'];
+  const rows=filteredRows.map(r=>{
+    const iss=consistScore(r);
+    return [`"${r.empresa}"`,r.cnpj,r.codigo,r.competencia,r.regime,r.responsavel,r.retencao,
+      stLbl(r.reinfSt),stLbl(r.mitSt),stLbl(r.dctfSt),
+      iss.length?`"${iss.map(x=>x.msg).join('; ')}"`:'"OK"',r.ultimaVer].join(',');
+  });
+  dl('exemplo_obrigacoes_'+todayFmt()+'.csv',[H.join(','),...rows].join('\n'),'text/csv');
+  toast('CSV exportado','ok'); toggleDD();
+}
+
+function exportPendencias(){
+  const H=['Empresa','CNPJ','Competência','Obrigação','Status','Análise'];
+  const rows=[];
+  for(const r of filteredRows){
+    [['REINF',r.reinfSt],['MIT',r.mitSt],['DCTFWeb',r.dctfSt]].forEach(([o,st])=>{
+      if(!r.obrigacoes.includes(o)||st==='sent') return;
+      const iss=consistScore(r).filter(x=>x.msg.includes(o)).map(x=>x.msg).join('; ');
+      rows.push([`"${r.empresa}"`,r.cnpj,r.competencia,o,stLbl(st),`"${iss||'—'}"`].join(','));
+    });
+  }
+  if(!rows.length){toast('Sem pendências!','ok');toggleDD();return;}
+  dl('exemplo_pendencias_'+todayFmt()+'.csv',[H.join(','),...rows].join('\n'),'text/csv');
+  toast(`${rows.length} pendência(s) exportada(s)`,'ok'); toggleDD();
+}
+
+function exportJSON(){
+  dl('exemplo_backup_'+todayFmt()+'.json',JSON.stringify({empresas,registros,exportedAt:new Date().toISOString()},null,2),'application/json');
+  toast('Backup JSON exportado','ok'); toggleDD();
+}
+
+function stLbl(st){return st==='sent'?'Enviado':st==='missing'?'Pendente':st==='partial'?'Parcial':st==='na'?'N/A':'Sem PDF'}
+
+function dl(name,content,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=name; a.click();
+}
+
+function clearAll(){
+  if(!confirm('Limpar todas as empresas e registros?')) return;
+  empresas=[]; registros=[]; pdfFiles=[];
+  saveData(); renderAll();
+  document.getElementById('pdfList').textContent='Nenhum arquivo carregado';
+  toast('Dados limpos','inf');
+}
+
+function openModal(id){ document.getElementById(id).classList.add('open') }
+function closeModal(id){ document.getElementById(id).classList.remove('open') }
+
+function toast(msg,type='inf'){
+  const ct=document.getElementById('toastCt');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`${{'ok':'✅','err':'❌','inf':'ℹ️','wrn':'⚠️'}[type]||'•'} ${msg}`;
+  ct.appendChild(el); setTimeout(()=>el.remove(),4500);
+}
+
+function norm(c){return c?c.replace(/\D/g,''):''}
+function trunc(s,n){return s.length>n?s.slice(0,n)+'…':s}
+function today(){return new Date().toLocaleDateString('pt-BR')}
+function todayFmt(){return new Date().toISOString().slice(0,10).replace(/-/g,'')}
+function maskCNPJ(i){
+  let v=i.value.replace(/\D/g,'');
+  v=v.replace(/(\d{2})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2')
+     .replace(/(\d{3})(\d)/,'$1/$2').replace(/(\d{4})(\d)/,'$1-$2');
+  i.value=v;
+}
+
+// ══════════════════════════════════════
+//  PLANILHA IMPORT
+// ══════════════════════════════════════
+let planPreviewData = []; // rows ready to import
+
+function planDragOver(e){
+  e.preventDefault();
+  document.getElementById('planDropZone').style.borderColor='var(--green)';
+  document.getElementById('planDropZone').style.background='var(--green-faint)';
+}
+function planDragLeave(){
+  document.getElementById('planDropZone').style.borderColor='var(--border)';
+  document.getElementById('planDropZone').style.background='var(--bg3)';
+}
+function planDrop(e){
+  e.preventDefault(); planDragLeave();
+  const files=Array.from(e.dataTransfer.files);
+  const f=files.find(x=>/\.(csv|xlsx|xls)$/i.test(x.name));
+  if(f) processPlanilha(f);
+  else toast('Formato não suportado. Use .CSV ou .XLSX','err');
+}
+function handlePlanilha(e){
+  const f=e.target.files[0];
+  if(f) processPlanilha(f);
+  e.target.value='';
+}
+
+function processPlanilha(file){
+  const isCSV = /\.csv$/i.test(file.name);
+  setProgress('planProgress','planProgressBar','planProgressPct','planProgressMsg',0,'Lendo arquivo…');
+  document.getElementById('planProgress').style.display='block';
+  document.getElementById('planPreviewWrap').style.display='none';
+  document.getElementById('btnConfirmImport').style.display='none';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      setProgress('planProgress','planProgressBar','planProgressPct','planProgressMsg',30,'Processando colunas…');
+      let rows;
+      if(isCSV){
+        rows = parseCSV(e.target.result);
+      } else {
+        // XLSX — use SheetJS from CDN if available, else guide user
+        if(typeof XLSX !== 'undefined'){
+          const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+        } else {
+          toast('Para .XLSX carregue a biblioteca. Use .CSV para garantir compatibilidade.','wrn');
+          document.getElementById('planProgress').style.display='none';
+          return;
+        }
+      }
+      setProgress('planProgress','planProgressBar','planProgressPct','planProgressMsg',70,'Validando dados…');
+      const parsed = mapPlanilhaRows(rows);
+      setProgress('planProgress','planProgressBar','planProgressPct','planProgressMsg',100,'Pronto!');
+      setTimeout(()=>{
+        document.getElementById('planProgress').style.display='none';
+        showPlanPreview(parsed);
+      },400);
+    }catch(err){
+      document.getElementById('planProgress').style.display='none';
+      toast('Erro ao ler arquivo: '+err.message,'err');
+      console.error(err);
+    }
+  };
+  if(isCSV) reader.readAsText(file, 'UTF-8');
+  else reader.readAsArrayBuffer(file);
+}
+
+function setProgress(panelId, barId, pctId, msgId, pct, msg){
+  document.getElementById(barId).style.width = pct+'%';
+  document.getElementById(pctId).textContent = pct+'%';
+  if(msgId) document.getElementById(msgId).textContent = msg;
+}
+
+function parseCSV(text){
+  // Detect delimiter: semicolon or comma
+  const firstLine = text.split('\n')[0];
+  const delim = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ',';
+  const lines = text.split('\n').filter(l=>l.trim());
+  if(!lines.length) throw new Error('Arquivo CSV vazio');
+  // Normalize header: lowercase, trim, remove BOM
+  const headers = lines[0].replace(/^\uFEFF/,'').split(delim).map(h=>h.trim().toLowerCase()
+    .replace(/['"]/g,'').normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    const vals = splitCSVLine(lines[i], delim);
+    const obj = {};
+    headers.forEach((h,j) => obj[h] = (vals[j]||'').trim().replace(/^["']|["']$/g,''));
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function splitCSVLine(line, delim){
+  const result=[], re=delim===','?/,(?=(?:[^"]*"[^"]*")*[^"]*$)/:/;(?=(?:[^"]*"[^"]*")*[^"]*$)/;
+  return line.split(re);
+}
+
+// Normalize column names with accents / variations
+const COL_MAP = {
+  nome:['nome','razao social','razão social','empresa','name'],
+  cnpj:['cnpj'],
+  codigo:['codigo','código','cod','cod dominio','código domínio','coddominio'],
+  regime:['regime','regime tributario','regime tributário'],
+  responsavel:['responsavel','responsável','resp'],
+  retencao:['retencao','retenção','tipo retencao','tipo retenção'],
+  reinf:['reinf'],
+  mit:['mit'],
+  dctfweb:['dctfweb','dctf web','dctf'],
+  obs:['obs','observacoes','observações','observacao','observação','nota'],
+};
+
+function findCol(headers, key){
+  const variants = COL_MAP[key]||[key];
+  for(const h of headers){
+    const hNorm = h.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    if(variants.some(v=>hNorm===v||hNorm.includes(v))) return h;
+  }
+  return null;
+}
+
+function mapPlanilhaRows(rows){
+  if(!rows.length) throw new Error('Planilha vazia');
+  const headers = Object.keys(rows[0]);
+  const get=(row,key)=>{
+    const col=findCol(headers,key);
+    return col?(row[col]||'').toString().trim():'';
+  };
+
+  return rows.map((row,i)=>{
+    const nome     = get(row,'nome');
+    const cnpjRaw  = get(row,'cnpj');
+    const codigo   = get(row,'codigo');
+    const regimeRaw= get(row,'regime');
+    const respRaw  = get(row,'responsavel');
+    const retRaw   = get(row,'retencao');
+    const reinfRaw = get(row,'reinf');
+    const mitRaw   = get(row,'mit');
+    const dctfRaw  = get(row,'dctfweb');
+    const obs      = get(row,'obs');
+
+    // Skip completely empty rows
+    if(!nome && !cnpjRaw) return null;
+
+    const errors=[];
+    if(!nome) errors.push('Nome ausente');
+
+    // Normalize CNPJ
+    const cnpjDigits = cnpjRaw.replace(/\D/g,'');
+    let cnpj = cnpjRaw;
+    if(cnpjDigits.length===14) cnpj=fmtCNPJ(cnpjDigits);
+    else if(cnpjRaw) errors.push('CNPJ inválido');
+    else errors.push('CNPJ ausente');
+
+    // Normalize regime
+    const regimeMap={
+      'simples':      'Simples Nacional',
+      'simples nacional':'Simples Nacional',
+      'sn':           'Simples Nacional',
+      'lucro presumido':'Lucro Presumido',
+      'presumido':    'Lucro Presumido',
+      'lp':           'Lucro Presumido',
+      'lucro real':   'Lucro Real',
+      'real':         'Lucro Real',
+      'lr':           'Lucro Real',
+    };
+    const regimeKey = regimeRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const regime = regimeMap[regimeKey] || (regimeRaw||null);
+    if(!regime) errors.push('Regime inválido');
+
+    // Responsavel
+    const respKey = respRaw.toLowerCase();
+    const responsavel = respKey.includes('folha')?'Folha':'Fiscal';
+
+    // Retencao
+    const retKey = retRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    let retencao='INSS';
+    if(retKey.includes('federal')||retKey.includes('fed')) retencao='Federais';
+    if((retKey.includes('inss'))&&(retKey.includes('federal')||retKey.includes('fed'))) retencao='INSS e Federais';
+    if(retKey.includes('nenhum')||retKey==='nao'||retKey==='não') retencao='Nenhuma';
+
+    // Obrigações
+    const yn=v=>{const k=(v||'SIM').toString().toUpperCase().trim();return k!=='NAO'&&k!=='NÃO'&&k!=='N'&&k!=='0'&&k!=='FALSE'&&k!=='NÃO';};
+    const obrigacoes=[];
+    if(yn(reinfRaw)) obrigacoes.push('REINF');
+    if(yn(mitRaw))   obrigacoes.push('MIT');
+    if(yn(dctfRaw))  obrigacoes.push('DCTFWeb');
+
+    // Check duplicate in current list
+    const isDup = empresas.some(e=>norm(e.cnpj)===norm(cnpj));
+
+    return {
+      linha: i+2, nome, cnpj, codigo, regime:regime||'Simples Nacional',
+      responsavel, retencao, obrigacoes, obs,
+      errors, isDup, valid: errors.length===0
+    };
+  }).filter(Boolean);
+}
+
+function showPlanPreview(rows){
+  planPreviewData = rows;
+  const valid   = rows.filter(r=>r.valid&&!r.isDup).length;
+  const updates = rows.filter(r=>r.valid&&r.isDup).length;
+  const erros   = rows.filter(r=>!r.valid).length;
+
+  document.getElementById('planPreviewCount').textContent = rows.length;
+
+  const errEl = document.getElementById('planErrCount');
+  const dupEl = document.getElementById('planDupCount');
+  if(erros>0){errEl.textContent=`⚠️ ${erros} com erro`; errEl.style.display='';}
+  else errEl.style.display='none';
+  if(updates>0){dupEl.textContent=`🔄 ${updates} serão atualizadas`; dupEl.style.display='';}
+  else dupEl.style.display='none';
+
+  const tbody = document.getElementById('planPreviewBody');
+  tbody.innerHTML = rows.map(r=>{
+    const bg = !r.valid ? 'background:var(--s-red2)' : r.isDup ? 'background:var(--s-yellow2)' : 'background:var(--s-green2)';
+    const statusBadge = !r.valid
+      ? `<span style="color:var(--s-red);font-size:10px">❌ ${r.errors.join(', ')}</span>`
+      : r.isDup
+        ? `<span style="color:var(--s-yellow);font-size:10px">🔄 Atualizar</span>`
+        : `<span style="color:var(--green);font-size:10px">✅ Nova</span>`;
+    const obrIcons = r.obrigacoes.map(o=>({REINF:'📋',MIT:'📑',DCTFWeb:'📊'}[o]||o)).join(' ');
+    return `<tr style="${bg}">
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border2);color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px">${r.linha}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border2);font-weight:600;color:var(--text);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.nome}">${r.nome||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border2);font-family:'JetBrains Mono',monospace;color:var(--text2);font-size:10px">${r.cnpj||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border2);color:var(--text2)">${r.regime||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border2);color:var(--text2)">${r.responsavel}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border2)">${obrIcons}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border2)">${statusBadge}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('planPreviewWrap').style.display='block';
+  if(rows.some(r=>r.valid)){
+    document.getElementById('btnConfirmImport').style.display='';
+    document.getElementById('btnConfirmImport').textContent=
+      `✅ Importar ${valid} nova${valid!==1?'s':''} + ${updates} atualização${updates!==1?'ões':''}`;
+  }
+}
+
+function confirmImportPlan(){
+  const validRows = planPreviewData.filter(r=>r.valid);
+  let added=0, updated=0;
+  for(const r of validRows){
+    const existing = empresas.findIndex(e=>norm(e.cnpj)===norm(r.cnpj));
+    const obj = {nome:r.nome,cnpj:r.cnpj,codigo:r.codigo,regime:r.regime,
+                 responsavel:r.responsavel,retencao:r.retencao,obrigacoes:r.obrigacoes,obs:r.obs};
+    if(existing>-1){
+      empresas[existing]={...empresas[existing],...obj};
+      updated++;
+    } else {
+      empresas.push({id:Date.now()+added,...obj});
+      added++;
+    }
+  }
+  saveData(); renderAll();
+  closeModal('modalImportPlan'); planReset();
+  toast(`✅ ${added} empresa(s) importada(s), ${updated} atualizada(s)`,'ok');
+}
+
+function planReset(){
+  planPreviewData=[];
+  document.getElementById('planPreviewWrap').style.display='none';
+  document.getElementById('planProgress').style.display='none';
+  document.getElementById('btnConfirmImport').style.display='none';
+  document.getElementById('planErrCount').style.display='none';
+  document.getElementById('planDupCount').style.display='none';
+}
+
+// Download modelo CSV
+function downloadModelo(){
+  const header='nome,cnpj,codigo,regime,responsavel,retencao,reinf,mit,dctfweb,obs';
+  const rows=[
+    '"Comercial Silva Ltda","00.000.008/0001-00","1001","Simples Nacional","Fiscal","INSS","SIM","SIM","SIM",""',
+    '"Indústria Verde S.A.","00.000.009/0001-00","1002","Lucro Real","Folha","INSS e Federais","SIM","SIM","SIM",""',
+    '"Tech Solutions Ltda","00.000.010/0001-00","1003","Lucro Presumido","Fiscal","Federais","SIM","NAO","SIM","MIT nao se aplica"',
+    '"Farmácia Popular ME","00.000.012/0001-00","1004","Simples Nacional","Fiscal","INSS","SIM","NAO","SIM",""',
+  ];
+  const csv='\uFEFF'+[header,...rows].join('\n'); // BOM for Excel
+  dl('exemplo_modelo_empresas.csv',csv,'text/csv;charset=utf-8');
+  toast('Modelo CSV baixado!','ok');
+}
+</script>
+</body>
+</html>
